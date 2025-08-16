@@ -122,7 +122,7 @@ export default function SignupPage() {
             src="/keyskeeperlogo.png"
             alt="Keyskeeper"
             width={120}
-            height={40}
+            height={70}
             className="h-12 w-auto mx-auto mb-6"
           />
           <h2 className="text-3xl font-bold text-gray-900">

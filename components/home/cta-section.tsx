@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Home, Search } from 'lucide-react'
+import { ArrowRight, Home, Search, Mail, Phone, User } from 'lucide-react'
 
 export function CTASection() {
   return (
@@ -41,14 +41,46 @@ export function CTASection() {
 
         <div className="mt-16 pt-16 border-t border-white/20">
           <div className="text-center">
-            <p className="text-white/80 mb-4">Contact us directly</p>
-            <div className="space-y-2 text-white">
-              <p className="font-semibold">admin@keyskeeper.co.nz</p>
-              <p>+64 27 777 1486</p>
-              <p className="text-sm text-white/70">
-                Director: Mittal Dholakiya
-              </p>
+            <p className="text-white/80 mb-6 text-lg">Contact us directly</p>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center text-white">
+              <a 
+                href="mailto:admin@keyskeeper.co.nz"
+                className="flex items-center gap-3 hover:text-white/80 transition-colors group"
+              >
+                <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold">admin@keyskeeper.co.nz</span>
+              </a>
+              
+              <a 
+                href="tel:+64277771486"
+                className="flex items-center gap-3 hover:text-white/80 transition-colors group"
+              >
+                <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold">+64 27 777 1486</span>
+              </a>
             </div>
+            
+            <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
+              <User className="h-4 w-4" />
+              <span>Director: Mittal Dholakiya</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Created by section */}
+        <div className="mt-12 pt-8 border-t border-white/10">
+          <div className="text-center">
+            <p className="text-white/60 text-sm">
+              Created by{' '}
+              <a 
+                href="https://novanexus.nz" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-white hover:text-white/80 transition-colors font-medium underline decoration-white/30 hover:decoration-white/60"
+              >
+                Novanexus.nz
+              </a>
+            </p>
           </div>
         </div>
       </div>
