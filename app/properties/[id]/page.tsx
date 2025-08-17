@@ -1,3 +1,4 @@
+// app/properties/[id]/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -30,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { supabase, Property } from '@/lib/supabase'
 import { formatPrice } from '@/lib/stripe'
+import PropertyLocationMap from '@/components/property/location-map'
 
 export default function PropertyDetailsPage() {
   const params = useParams()
@@ -98,8 +100,8 @@ export default function PropertyDetailsPage() {
   ]
 
   const amenities = [
-    { icon: Wifi, label: 'WiFi', available: true },
-    { icon: Car, label: 'Parking', available: true },
+    { icon: Wifi, label: 'WiFi', available: property.internet_included || true },
+    { icon: Car, label: 'Parking', available: property.parking_spaces > 0 },
     { icon: Utensils, label: 'Kitchen', available: true },
     { icon: Tv, label: 'TV', available: property.is_furnished },
     { icon: Home, label: 'Furnished', available: property.is_furnished },
@@ -247,6 +249,14 @@ export default function PropertyDetailsPage() {
                       {property.bond_amount ? formatPrice(property.bond_amount) : 'TBD'}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Parking</span>
+                    <span className="font-medium">{property.parking_spaces || 0} spaces</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Pets Allowed</span>
+                    <span className="font-medium">{property.pets_allowed ? 'Yes' : 'No'}</span>
+                  </div>
                 </div>
               </div>
 
@@ -292,38 +302,32 @@ export default function PropertyDetailsPage() {
                 )
               })}
             </div>
+
+            {/* Additional amenities from property data */}
+            {property.amenities && property.amenities.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-md font-semibold text-gray-900 mb-3">Additional Amenities</h4>
+                <div className="flex flex-wrap gap-2">
+                  {property.amenities.map((amenity, index) => (
+                    <Badge key={index} variant="outline" className="text-sm">
+                      {amenity}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="location" className="mt-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Address</h3>
-                <p className="text-gray-700">{property.address}, {property.suburb}, {property.city}</p>
-              </div>
-              
-              <div className="bg-gray-100 rounded-lg p-8 text-center">
-                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">Interactive map will be available when Google Maps API is added</p>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Nearby</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">City Center</span>
-                    <span className="font-medium">5 km</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Public Transport</span>
-                    <span className="font-medium">200m</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Supermarket</span>
-                    <span className="font-medium">300m</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PropertyLocationMap property={{
+              id: property.id,
+              title: property.title,
+              address: property.address,
+              suburb: property.suburb,
+              city: property.city,
+              latitude: property.latitude,
+              longitude: property.longitude
+            }} />
           </TabsContent>
           
           <TabsContent value="reviews" className="mt-6">
