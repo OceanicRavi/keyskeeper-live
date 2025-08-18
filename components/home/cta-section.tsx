@@ -73,7 +73,7 @@ export function CTASection() {
             <p className="text-white/60 text-sm">
               Created by{' '}
               <a 
-                href="https://novanexus.nz" 
+                href="https://www.novanexus.nz" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-white hover:text-white/80 transition-colors font-medium underline decoration-white/30 hover:decoration-white/60"
