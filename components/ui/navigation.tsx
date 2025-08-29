@@ -12,7 +12,7 @@ export function TopNavigation() {
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-left h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Image
@@ -22,6 +22,9 @@ export function TopNavigation() {
               height={70}
               className="h-14 w-auto"
             />
+            <span className="text-3xl font-bold text-gray-700 drop-shadow-lg hover:text-[#FF5A5F] transition-colors duration-300">
+              <span style={{ color: '#FF5A5F' }}>K</span>eys<span style={{ color: '#FF5A5F' }}>K</span>eeper
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -54,16 +57,16 @@ export function TopNavigation() {
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
             <div className="flex flex-col space-y-4">
-              <Link 
-                href="/auth/login" 
+              <Link
+                href="/auth/login"
                 className="flex items-center px-4 py-2 text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <LogIn className="h-4 w-4 mr-3" />
                 Sign In
               </Link>
-              <Link 
-                href="/auth/signup?role=landlord" 
+              <Link
+                href="/auth/signup?role=landlord"
                 className="mx-4"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -87,17 +90,17 @@ export function BottomNavigation() {
           <Home className="h-5 w-5" />
           <span className="text-xs">Home</span>
         </Link>
-        
+
         <Link href="/search" className="flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-[#FF5A5F]">
           <Search className="h-5 w-5" />
           <span className="text-xs">Search</span>
         </Link>
-        
+
         <Link href="/auth/signup?role=landlord" className="flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-[#FF5A5F]">
           <Building className="h-5 w-5" />
           <span className="text-xs">List</span>
         </Link>
-        
+
         <Link href="/auth/login" className="flex flex-col items-center justify-center space-y-1 text-gray-600 hover:text-[#FF5A5F]">
           <User className="h-5 w-5" />
           <span className="text-xs">Account</span>
