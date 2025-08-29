@@ -49,11 +49,7 @@ export function HeroSection() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
             Room-by-room & whole-home property management
-            <span className="block text-green-500 flex items-center justify-center gap-3">
-              <span>🌿</span>
-              built for NZ
-              <span>🌿</span>
-            </span>
+            <span className="block text-blue-200">built for NZ</span>
           </h1>
                     
           <p className="text-xl md:text-2xl text-gray-200 mb-12 font-light">
