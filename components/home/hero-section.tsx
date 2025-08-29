@@ -29,7 +29,8 @@ export function HeroSection() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+    <>
+      <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-70"
@@ -135,10 +136,10 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
 
-    {/* New Zealand Map Background Section */}
-    <div className="relative bg-white py-16 overflow-hidden">
+      {/* New Zealand Map Background Section */}
+      <div className="relative bg-white py-16 overflow-hidden">
       {/* Polygon Map Background */}
       <div 
         className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat"
@@ -237,7 +238,8 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
   )
 }
