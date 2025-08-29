@@ -1,8 +1,9 @@
+// app/search/page.tsx
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { MapPin, Filter, Grid, List, Star, Heart, Navigation, Sliders, Calendar, Users, Home as HomeIcon, DollarSign, Bed, Bath, Car, Wifi, Search } from 'lucide-react'
+import { MapPin, Filter, Grid, List, Star, Heart, Navigation, Sliders, Calendar, Users, Home as HomeIcon, DollarSign, Bed, Bath, Car, Wifi, Search, ChevronDown, X } from 'lucide-react'
 import { TopNavigation, BottomNavigation } from '@/components/ui/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
 import { supabase, Property } from '@/lib/supabase'
 import { formatPrice } from '@/lib/stripe'
-import { initGoogleMaps, isMapsReady, geocodeAddress, calculateDistance, searchPlaces } from '@/lib/maps'
+import { initGoogleMaps, isMapsReady, geocodeAddress, calculateDistance, searchPlaces, nzSuburbs } from '@/lib/maps'
 import Link from 'next/link'
 
 interface PropertyWithDistance extends Property {
@@ -45,6 +46,7 @@ export default function SearchPageWithMap() {
   const [showFilters, setShowFilters] = useState(false)
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchCenter, setSearchCenter] = useState<{ lat: number, lng: number } | null>(null)
 
   // Enhanced search filters
   const [filters, setFilters] = useState<SearchFilters>({
@@ -60,15 +62,6 @@ export default function SearchPageWithMap() {
     availableFrom: ''
   })
 
-  // Popular locations in NZ
-  const popularLocations = [
-    'Auckland Central', 'Ponsonby', 'Parnell', 'Newmarket', 'Mt Eden',
-    'Wellington Central', 'Te Aro', 'Mount Victoria', 'Kelburn',
-    'Christchurch Central', 'Riccarton', 'Merivale', 'Fendalton',
-    'Hamilton East', 'Tauranga', 'Mount Maunganui', 'Rotorua',
-    'Dunedin Central', 'Queenstown', 'Nelson', 'Palmerston North'
-  ]
-
   // Initialize map
   useEffect(() => {
     const initMap = async () => {
@@ -77,11 +70,20 @@ export default function SearchPageWithMap() {
       const ready = await initGoogleMaps()
       if (ready && !map) {
         const google = window.google
-        const initialCenter = { lat: -36.8485, lng: 174.7633 } // Auckland center
+        let initialCenter = { lat: -36.8485, lng: 174.7633 } // Auckland center
+
+        // If we have a search location, try to geocode it
+        if (filters.location) {
+          const geocoded = await geocodeAddress(filters.location + ', New Zealand')
+          if (geocoded) {
+            initialCenter = geocoded
+            setSearchCenter(geocoded)
+          }
+        }
 
         try {
           const newMap = new google.maps.Map(mapRef.current, {
-            zoom: 11,
+            zoom: filters.location ? 13 : 11,
             center: initialCenter,
             styles: [
               {
@@ -111,7 +113,6 @@ export default function SearchPageWithMap() {
                   lng: position.coords.longitude
                 }
                 setUserLocation(userPos)
-                newMap.setCenter(userPos)
 
                 // Add user location marker
                 new google.maps.Marker({
@@ -150,9 +151,9 @@ export default function SearchPageWithMap() {
     setFilters(prev => ({ ...prev, location: query }))
     
     if (query.length > 2) {
-      const suggestions = popularLocations.filter(loc => 
+      const suggestions = nzSuburbs.filter(loc => 
         loc.toLowerCase().includes(query.toLowerCase())
-      ).slice(0, 5)
+      ).slice(0, 8)
       setSearchSuggestions(suggestions)
       setShowSuggestions(true)
     } else {
@@ -160,7 +161,7 @@ export default function SearchPageWithMap() {
     }
   }
 
-  // Fetch properties with enhanced filtering
+  // Fetch properties with enhanced filtering and location-based search
   useEffect(() => {
     fetchProperties()
   }, [filters, userLocation])
@@ -173,9 +174,17 @@ export default function SearchPageWithMap() {
         .select('*')
         .eq('is_available', true)
 
-      // Location filter
+      // Location-based filtering with geocoding
       if (filters.location) {
-        query = query.or(`suburb.ilike.%${filters.location}%,city.ilike.%${filters.location}%,address.ilike.%${filters.location}%`)
+        // Try to geocode the location first
+        const geocoded = await geocodeAddress(filters.location + ', New Zealand')
+        if (geocoded) {
+          setSearchCenter(geocoded)
+          // For now, we'll use text-based search since we don't have lat/lng in all properties
+          query = query.or(`suburb.ilike.%${filters.location}%,city.ilike.%${filters.location}%,address.ilike.%${filters.location}%`)
+        } else {
+          query = query.or(`suburb.ilike.%${filters.location}%,city.ilike.%${filters.location}%,address.ilike.%${filters.location}%`)
+        }
       }
 
       // Price filters
@@ -225,13 +234,14 @@ export default function SearchPageWithMap() {
 
       let propertiesWithDistance = data || []
 
-      // Calculate distances if user location is available
-      if (userLocation && isMapsReady()) {
+      // Calculate distances if we have a search center or user location
+      const referenceLocation = searchCenter || userLocation
+      if (referenceLocation && isMapsReady()) {
         propertiesWithDistance = await Promise.all(
           (data || []).map(async (property) => {
             if (property.latitude && property.longitude) {
               const distance = await calculateDistance(
-                userLocation,
+                referenceLocation,
                 { lat: property.latitude, lng: property.longitude }
               )
               return { ...property, distance }
@@ -241,7 +251,7 @@ export default function SearchPageWithMap() {
         )
 
         // Sort by distance
-        propertiesWithDistance.sort((a, b) => (a.distance || 0) - (b.distance || 0))
+        propertiesWithDistance.sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity))
       }
 
       setProperties(propertiesWithDistance)
@@ -268,14 +278,14 @@ export default function SearchPageWithMap() {
           title: property.title,
           icon: {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg width="40" height="50" viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 0C8.954 0 0 8.954 0 20c0 20 20 30 20 30s20-10 20-30c0-8.837-8.954-20-20-20z" fill="#FF5A5F"/>
-                <circle cx="20" cy="20" r="8" fill="white"/>
-                <text x="20" y="24" text-anchor="middle" fill="#FF5A5F" font-size="6" font-weight="bold">$${Math.round(property.price_per_week)}</text>
+              <svg width="50" height="60" viewBox="0 0 50 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M25 0C11.193 0 0 11.193 0 25c0 25 25 35 25 35s25-10 25-35c0-13.807-11.193-25-25-25z" fill="#FF5A5F"/>
+                <circle cx="25" cy="25" r="12" fill="white"/>
+                <text x="25" y="29" text-anchor="middle" fill="#FF5A5F" font-size="8" font-weight="bold">$${Math.round(property.price_per_week)}</text>
               </svg>
             `),
-            scaledSize: new window.google.maps.Size(40, 50),
-            anchor: new window.google.maps.Point(20, 50)
+            scaledSize: new window.google.maps.Size(50, 60),
+            anchor: new window.google.maps.Point(25, 60)
           }
         })
 
@@ -283,16 +293,17 @@ export default function SearchPageWithMap() {
         marker.addListener('click', () => {
           const infoWindow = new window.google.maps.InfoWindow({
             content: `
-              <div style="padding: 12px; min-width: 250px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${property.title}</h3>
-                <p style="margin: 0 0 4px 0; color: #666; font-size: 14px;">${property.suburb}, ${property.city}</p>
-                <p style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #FF5A5F;">${formatPrice(property.price_per_week)}/week</p>
-                <div style="margin: 4px 0;">
-                  <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-right: 4px;">${property.bedrooms} bed</span>
-                  <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 12px;">${property.bathrooms} bath</span>
+              <div style="padding: 16px; min-width: 280px; font-family: Inter, sans-serif;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #111827;">${property.title}</h3>
+                <p style="margin: 0 0 4px 0; color: #6b7280; font-size: 14px;">${property.suburb}, ${property.city}</p>
+                <p style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #FF5A5F;">${formatPrice(property.price_per_week)}/week</p>
+                <div style="margin: 8px 0; display: flex; gap: 8px;">
+                  <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;">${property.bedrooms} bed</span>
+                  <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;">${property.bathrooms} bath</span>
+                  <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; text-transform: capitalize;">${property.property_type}</span>
                 </div>
-                ${property.distance ? `<p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">📍 ${(property.distance / 1000).toFixed(1)}km away</p>` : ''}
-                <a href="/properties/${property.id}" style="display: inline-block; margin-top: 8px; padding: 6px 12px; background: #FF5A5F; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;">View Details</a>
+                ${property.distance ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280;">📍 ${(property.distance / 1000).toFixed(1)}km away</p>` : ''}
+                <a href="/properties/${property.id}" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: #FF5A5F; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; transition: background-color 0.2s;">View Details</a>
               </div>
             `
           })
@@ -314,12 +325,23 @@ export default function SearchPageWithMap() {
       if (userLocation) {
         bounds.extend(userLocation)
       }
+      if (searchCenter) {
+        bounds.extend(searchCenter)
+      }
       map.fitBounds(bounds)
+      
+      // Ensure minimum zoom level
+      const listener = window.google.maps.event.addListener(map, 'bounds_changed', () => {
+        if (map.getZoom() && map.getZoom()! > 16) {
+          map.setZoom(16)
+        }
+        window.google.maps.event.removeListener(listener)
+      })
     }
   }
 
   // Search by map area
-  const handleSearchThisArea = () => {
+  const handleSearchThisArea = async () => {
     if (!map) return
 
     const bounds = map.getBounds()
@@ -327,10 +349,34 @@ export default function SearchPageWithMap() {
 
     const center = bounds.getCenter()
     if (center) {
-      setFilters(prev => ({ 
-        ...prev, 
-        location: `${center.lat().toFixed(4)}, ${center.lng().toFixed(4)}` 
-      }))
+      // Try to reverse geocode the center to get a readable location
+      try {
+        const google = window.google
+        const geocoder = new google.maps.Geocoder()
+        
+        geocoder.geocode({ location: center }, (results, status) => {
+          if (status === 'OK' && results?.[0]) {
+            const addressComponents = results[0].address_components
+            let suburb = ''
+            let city = ''
+            
+            addressComponents?.forEach((component) => {
+              if (component.types.includes('sublocality_level_1') || component.types.includes('suburb')) {
+                suburb = component.long_name
+              }
+              if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+                city = component.long_name
+              }
+            })
+            
+            const newLocation = suburb || city || 'Current area'
+            setFilters(prev => ({ ...prev, location: newLocation }))
+            setSearchCenter({ lat: center.lat(), lng: center.lng() })
+          }
+        })
+      } catch (error) {
+        console.error('Reverse geocoding failed:', error)
+      }
     }
   }
 
@@ -347,7 +393,13 @@ export default function SearchPageWithMap() {
       utilitiesIncluded: null,
       availableFrom: ''
     })
+    setSearchCenter(null)
   }
+
+  const activeFiltersCount = Object.values(filters).filter(value => 
+    value !== '' && value !== 'all' && value !== 'any' && value !== null && 
+    !(typeof value === 'number' && (value === 0 || value === 2000))
+  ).length
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -362,7 +414,7 @@ export default function SearchPageWithMap() {
               <div className="flex-1 relative">
                 <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
-                  placeholder="Search by location, suburb, or address..."
+                  placeholder="Search by location, suburb, or address in New Zealand..."
                   value={filters.location}
                   onChange={(e) => handleLocationSearch(e.target.value)}
                   onFocus={() => setShowSuggestions(true)}
@@ -372,7 +424,7 @@ export default function SearchPageWithMap() {
                 
                 {/* Search Suggestions */}
                 {showSuggestions && searchSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1">
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 mt-1 max-h-64 overflow-y-auto">
                     {searchSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
@@ -380,11 +432,11 @@ export default function SearchPageWithMap() {
                           setFilters(prev => ({ ...prev, location: suggestion }))
                           setShowSuggestions(false)
                         }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors"
                       >
                         <div className="flex items-center">
                           <MapPin className="h-4 w-4 text-gray-400 mr-3" />
-                          {suggestion}
+                          <span className="font-medium">{suggestion}</span>
                         </div>
                       </button>
                     ))}
@@ -395,10 +447,15 @@ export default function SearchPageWithMap() {
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className="px-6 py-3"
+                className="px-6 py-3 relative"
               >
                 <Sliders className="h-4 w-4 mr-2" />
                 Filters
+                {activeFiltersCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 bg-[#FF5A5F] text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
               </Button>
               
               <Button
@@ -409,6 +466,57 @@ export default function SearchPageWithMap() {
                 Search
               </Button>
             </div>
+
+            {/* Active Filters Display */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-sm text-gray-600 font-medium">Active filters:</span>
+                {filters.location && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {filters.location}
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, location: '' }))}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {(filters.minPrice > 0 || filters.maxPrice < 2000) && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    ${filters.minPrice} - ${filters.maxPrice}
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, minPrice: 0, maxPrice: 2000 }))}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                {filters.propertyType !== 'all' && (
+                  <Badge variant="secondary" className="flex items-center gap-1 capitalize">
+                    <HomeIcon className="h-3 w-3" />
+                    {filters.propertyType}
+                    <button
+                      onClick={() => setFilters(prev => ({ ...prev, propertyType: 'all' }))}
+                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-[#FF5A5F] hover:text-[#E8474B] text-sm"
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
 
             {/* Advanced Filters Panel */}
             {showFilters && (
@@ -549,14 +657,8 @@ export default function SearchPageWithMap() {
               <div className="flex items-center space-x-4">
                 <p className="text-gray-600">
                   <span className="font-semibold text-gray-900">{properties.length}</span> properties found
-                  {userLocation && ' • Sorted by distance'}
+                  {(userLocation || searchCenter) && ' • Sorted by distance'}
                 </p>
-                {filters.location && (
-                  <Badge variant="secondary" className="flex items-center">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {filters.location}
-                  </Badge>
-                )}
               </div>
               
               <div className="flex items-center space-x-2">
@@ -564,6 +666,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
+                  className={viewMode === 'grid' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -571,6 +674,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('list')}
+                  className={viewMode === 'list' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -578,6 +682,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'map' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('map')}
+                  className={viewMode === 'map' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
                 >
                   <MapPin className="h-4 w-4 mr-1" />
                   Map
@@ -591,27 +696,44 @@ export default function SearchPageWithMap() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto">
         {viewMode === 'map' ? (
-          <div className="flex h-[calc(100vh-250px)]">
+          <div className="flex h-[calc(100vh-280px)]">
             {/* Map */}
             <div className="flex-1 relative">
               <div ref={mapRef} className="w-full h-full" />
               {map && (
                 <Button
                   onClick={handleSearchThisArea}
-                  className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white hover:bg-gray-50 text-gray-900 border shadow-lg"
+                  className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white hover:bg-gray-50 text-gray-900 border shadow-lg z-10"
                 >
                   <Navigation className="h-4 w-4 mr-2" />
                   Search this area
                 </Button>
+              )}
+              
+              {loading && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5A5F] mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-600">Loading properties...</p>
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Property List Sidebar */}
             <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Properties ({properties.length})
-                </h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900">
+                    Properties ({properties.length})
+                  </h3>
+                  {(userLocation || searchCenter) && (
+                    <Badge variant="secondary" className="text-xs">
+                      By distance
+                    </Badge>
+                  )}
+                </div>
+                
                 {loading ? (
                   <div className="space-y-4">
                     {[...Array(5)].map((_, i) => (
@@ -622,11 +744,24 @@ export default function SearchPageWithMap() {
                       </div>
                     ))}
                   </div>
-                ) : (
+                ) : properties.length > 0 ? (
                   <div className="space-y-4">
                     {properties.map((property) => (
                       <PropertyMapCard key={property.id} property={property} />
                     ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-sm">No properties found in this area</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="mt-3"
+                    >
+                      Clear filters
+                    </Button>
                   </div>
                 )}
               </div>
@@ -636,18 +771,19 @@ export default function SearchPageWithMap() {
           /* Grid/List View */
           <div className="px-4 py-6 pb-24">
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(9)].map((_, i) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(12)].map((_, i) => (
                   <Card key={i} className="animate-pulse">
-                    <div className="aspect-video bg-gray-300" />
+                    <div className="aspect-[4/3] bg-gray-300" />
                     <CardContent className="p-4">
                       <div className="h-4 bg-gray-300 rounded mb-2" />
-                      <div className="h-3 bg-gray-300 rounded w-2/3" />
+                      <div className="h-3 bg-gray-300 rounded w-2/3 mb-2" />
+                      <div className="h-5 bg-gray-300 rounded w-1/2" />
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            ) : (
+            ) : properties.length > 0 ? (
               <div className={viewMode === 'grid'
                 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
                 : 'space-y-4'
@@ -657,13 +793,11 @@ export default function SearchPageWithMap() {
                     key={property.id}
                     property={property}
                     viewMode={viewMode as 'grid' | 'list'}
-                    showDistance={!!userLocation}
+                    showDistance={!!(userLocation || searchCenter)}
                   />
                 ))}
               </div>
-            )}
-
-            {!loading && properties.length === 0 && (
+            ) : (
               <div className="text-center py-16">
                 <div className="max-w-md mx-auto">
                   <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
@@ -701,40 +835,44 @@ function PropertyMapCard({ property }: { property: PropertyWithDistance }) {
   const mainImage = property.images?.[0] || 'https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg'
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
       <Link href={`/properties/${property.id}`}>
         <div className="flex">
-          <div className="w-28 h-24 flex-shrink-0">
+          <div className="w-28 h-24 flex-shrink-0 relative overflow-hidden">
             <img
               src={mainImage}
               alt={property.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           </div>
           <div className="flex-1 p-3">
             <h4 className="font-medium text-sm text-gray-900 line-clamp-2 mb-1">
               {property.title}
             </h4>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-gray-500 mb-2 flex items-center">
+              <MapPin className="h-3 w-3 mr-1" />
               {property.suburb}, {property.city}
             </p>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mb-1">
               <span className="font-semibold text-sm text-[#FF5A5F]">
                 {formatPrice(property.price_per_week)}/wk
               </span>
               {property.distance && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-blue-600 font-medium">
                   {property.distance < 1000
                     ? `${Math.round(property.distance)}m`
                     : `${(property.distance / 1000).toFixed(1)}km`}
                 </span>
               )}
             </div>
-            <div className="flex items-center mt-1 text-xs text-gray-500">
+            <div className="flex items-center text-xs text-gray-500">
               <Bed className="h-3 w-3 mr-1" />
               {property.bedrooms}
               <Bath className="h-3 w-3 ml-2 mr-1" />
               {property.bathrooms}
+              <span className="ml-2 px-1.5 py-0.5 bg-gray-100 rounded text-xs capitalize">
+                {property.property_type}
+              </span>
             </div>
           </div>
         </div>
@@ -758,15 +896,22 @@ function PropertyCard({
 
   if (viewMode === 'list') {
     return (
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
         <Link href={`/properties/${property.id}`}>
           <div className="flex">
-            <div className="w-64 h-48 flex-shrink-0">
+            <div className="w-64 h-48 flex-shrink-0 relative overflow-hidden">
               <img
                 src={mainImage}
                 alt={property.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
+              {showDistance && property.distance && (
+                <div className="absolute top-3 left-3 px-2 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
+                  {property.distance < 1000
+                    ? `${Math.round(property.distance)}m`
+                    : `${(property.distance / 1000).toFixed(1)}km`}
+                </div>
+              )}
             </div>
             <div className="flex-1 p-6">
               <div className="flex justify-between items-start mb-3">
@@ -777,13 +922,6 @@ function PropertyCard({
                   <div className="flex items-center text-gray-500 mb-3">
                     <MapPin size={16} className="mr-2" />
                     {property.suburb}, {property.city}
-                    {showDistance && property.distance && (
-                      <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        {property.distance < 1000
-                          ? `${Math.round(property.distance)}m away`
-                          : `${(property.distance / 1000).toFixed(1)}km away`}
-                      </span>
-                    )}
                   </div>
                 </div>
                 <Button
@@ -956,6 +1094,13 @@ function PropertyCard({
               <Badge variant="outline" className="text-xs">
                 <Wifi className="h-3 w-3 mr-1" />
                 WiFi
+              </Badge>
+            )}
+            {showDistance && property.distance && (
+              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                {property.distance < 1000
+                  ? `${Math.round(property.distance)}m away`
+                  : `${(property.distance / 1000).toFixed(1)}km away`}
               </Badge>
             )}
           </div>
