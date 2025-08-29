@@ -136,5 +136,107 @@ export function HeroSection() {
         </div>
       </div>
     </div>
+
+    {/* New Zealand Map Background Section */}
+    <div className="relative bg-white py-16 overflow-hidden">
+      {/* Polygon Map Background */}
+      <div 
+        className="absolute inset-0 opacity-10 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url("https://images.pexels.com/photos/87651/earth-blue-planet-globe-planet-87651.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")',
+          filter: 'hue-rotate(120deg) saturate(1.5) brightness(1.2)'
+        }}
+      />
+      
+      {/* Geometric NZ Map Overlay */}
+      <div className="absolute inset-0 opacity-20">
+        <svg
+          viewBox="0 0 1200 800"
+          className="w-full h-full object-contain"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* North Island - Geometric Polygon Style */}
+          <polygon
+            points="600,200 650,180 700,190 720,220 740,250 760,280 750,320 730,350 700,380 670,400 640,420 610,440 580,430 560,410 540,380 530,350 540,320 560,290 580,260 590,230"
+            fill="url(#gradient1)"
+            stroke="#10B981"
+            strokeWidth="2"
+            opacity="0.8"
+          />
+          
+          {/* South Island - Geometric Polygon Style */}
+          <polygon
+            points="580,460 620,450 660,470 690,500 710,540 720,580 710,620 690,650 660,680 630,700 600,710 570,700 540,680 520,650 510,620 520,580 540,540 560,500"
+            fill="url(#gradient2)"
+            stroke="#3B82F6"
+            strokeWidth="2"
+            opacity="0.8"
+          />
+          
+          {/* Stewart Island */}
+          <polygon
+            points="590,720 610,715 620,725 615,735 605,740 595,735"
+            fill="url(#gradient3)"
+            stroke="#8B5CF6"
+            strokeWidth="1"
+            opacity="0.8"
+          />
+          
+          {/* Gradients for colorful effect */}
+          <defs>
+            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.6"/>
+              <stop offset="50%" stopColor="#059669" stopOpacity="0.4"/>
+              <stop offset="100%" stopColor="#047857" stopOpacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6"/>
+              <stop offset="50%" stopColor="#2563EB" stopOpacity="0.4"/>
+              <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6"/>
+              <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.6"/>
+            </linearGradient>
+          </defs>
+          
+          {/* Decorative dots for major cities */}
+          <circle cx="640" cy="280" r="4" fill="#FF5A5F" opacity="0.8"/> <!-- Auckland -->
+          <circle cx="620" cy="380" r="3" fill="#FF5A5F" opacity="0.8"/> <!-- Wellington -->
+          <circle cx="650" cy="580" r="3" fill="#FF5A5F" opacity="0.8"/> <!-- Christchurch -->
+          <circle cx="580" cy="320" r="2" fill="#FF5A5F" opacity="0.8"/> <!-- Hamilton -->
+        </svg>
+      </div>
+      
+      {/* Content overlay */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+          Trusted Across New Zealand
+        </h2>
+        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          From Auckland to Invercargill, we're helping Kiwis find their perfect rental 
+          and manage properties with confidence.
+        </p>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-[#FF5A5F] mb-2">1,200+</div>
+            <div className="text-sm text-gray-600">Properties Listed</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-[#FF5A5F] mb-2">15+</div>
+            <div className="text-sm text-gray-600">Cities Covered</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-[#FF5A5F] mb-2">98%</div>
+            <div className="text-sm text-gray-600">Satisfaction Rate</div>
+          </div>
+          <div className="text-center">
+            <div className="text-3xl font-bold text-[#FF5A5F] mb-2">24/7</div>
+            <div className="text-sm text-gray-600">AI Support</div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
