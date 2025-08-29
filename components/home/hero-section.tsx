@@ -4,22 +4,16 @@ import { useState } from 'react'
 import { Search, MapPin, Calendar, ExternalLink, ArrowRight, FileText, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import Link from 'next/link'
 
 export function HeroSection() {
-  // Commented out existing search functionality
-  // const [location, setLocation] = useState('')
-  // const [checkIn, setCheckIn] = useState('')
-  // const [checkOut, setCheckOut] = useState('')
+  const [location, setLocation] = useState('')
 
-  // const handleSearch = () => {
-  //   // Redirect to search page with parameters
-  //   const params = new URLSearchParams()
-  //   if (location) params.set('location', location)
-  //   if (checkIn) params.set('checkIn', checkIn)
-  //   if (checkOut) params.set('checkOut', checkOut)
-  //    
-  //   window.location.href = `/search?${params.toString()}`
-  // }
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (location) params.set('location', location)
+    window.location.href = `/search?${params.toString()}`
+  }
 
   const handleTradeMeClick = () => {
     const tradeMeUrl = process.env.NEXT_PUBLIC_TRADEME_URL || 'https://www.trademe.co.nz'
@@ -56,6 +50,44 @@ export function HeroSection() {
             We are your Keys Keeper – we take care of your property
           </p>
 
+          {/* Property Search Bar */}
+          <div className="bg-white rounded-2xl p-6 shadow-2xl mb-12 max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Where do you want to live? (Auckland, Wellington...)"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="pl-12 py-4 text-lg border-0 focus:ring-2 focus:ring-[#FF5A5F] rounded-xl"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                />
+              </div>
+              <Button
+                onClick={handleSearch}
+                className="bg-[#FF5A5F] hover:bg-[#E8474B] text-white px-8 py-4 text-lg font-semibold rounded-xl flex items-center gap-2"
+              >
+                <Search className="h-5 w-5" />
+                Search Properties
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4 justify-center">
+              {['Auckland Central', 'Wellington', 'Christchurch', 'Hamilton', 'Tauranga'].map((city) => (
+                <button
+                  key={city}
+                  onClick={() => {
+                    setLocation(city)
+                    const params = new URLSearchParams()
+                    params.set('location', city)
+                    window.location.href = `/search?${params.toString()}`
+                  }}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-full transition-colors"
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
           {/* Buttons Container */}
           <div className="flex flex-col items-center gap-6">
             {/* Trade Me Button */}
