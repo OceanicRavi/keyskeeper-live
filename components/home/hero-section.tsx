@@ -27,13 +27,11 @@ export function HeroSection() {
   }
 
   const handlePropertyAppraisal = () => {
-    // Add your property appraisal logic here
-    console.log('Property Appraisal clicked')
+    window.location.href = '/property-appraisal'
   }
 
   const handlePropertyMaintenance = () => {
-    // Add your property maintenance logic here
-    console.log('Property Maintenance clicked')
+    window.location.href = '/maintenance-request'
   }
 
   return (
@@ -51,7 +49,11 @@ export function HeroSection() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
             Room-by-room & whole-home property management
-            <span className="block text-[#FF5A5F]">built for NZ</span>
+            <span className="block text-green-500 flex items-center justify-center gap-3">
+              <span>🌿</span>
+              built for NZ
+              <span>🌿</span>
+            </span>
           </h1>
                     
           <p className="text-xl md:text-2xl text-gray-200 mb-12 font-light">
