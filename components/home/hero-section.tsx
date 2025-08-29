@@ -136,7 +136,6 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-      </div>
 
       {/* New Zealand Map Background Section */}
       <div className="relative bg-white py-16 overflow-hidden">
@@ -240,8 +239,5 @@ export function HeroSection() {
       </div>
       </div>
     </>
-  )
-  )
-}
   )
 }
