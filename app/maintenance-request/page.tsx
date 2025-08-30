@@ -88,7 +88,7 @@ export default function MaintenanceRequestPage() {
     setError('')
 
     try {
-      // Create FormData for file upload
+      // Prepare form data for submission
       const submitData = new FormData()
       
       // Add form data

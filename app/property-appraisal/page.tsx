@@ -77,6 +77,7 @@ export default function PropertyAppraisalPage() {
     setError('')
 
     try {
+      // Submit the appraisal request
       const response = await fetch('/api/send-appraisal-email', {
         method: 'POST',
         headers: {
@@ -86,7 +87,8 @@ export default function PropertyAppraisalPage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to submit appraisal request')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to submit appraisal request')
       }
 
       setSuccess(true)
