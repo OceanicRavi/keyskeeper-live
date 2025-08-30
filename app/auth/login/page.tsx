@@ -41,11 +41,11 @@ export default function LoginPage() {
 
       // Redirect based on role
       if (profile?.role === 'landlord') {
-        router.push('/dashboard/landlord')
+        router.push('/landlord')
       } else if (profile?.role === 'tenant') {
-        router.push('/dashboard/tenant')
+        router.push('/tenant')
       } else if (profile?.role === 'maintenance') {
-        router.push('/dashboard/maintenance')
+        router.push('/dashboard')
       } else {
         router.push('/dashboard')
       }
