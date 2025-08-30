@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Search, MapPin, Calendar, ExternalLink, ArrowRight, FileText, Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import Link from 'next.js'
 
 export function HeroSection() {
   const [location, setLocation] = useState('')
@@ -44,7 +43,7 @@ export function HeroSection() {
           <div className="max-w-5xl mx-auto w-full">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
               Room-by-room & whole-home property management
-              <span className="block text-blue-200">built for NZ</span>
+              <span className="block text-[#FF5A5F]">built for NZ</span>
             </h1>
                       
             <p className="text-lg md:text-xl lg:text-2xl text-gray-200 mb-8 font-light">
@@ -57,7 +56,7 @@ export function HeroSection() {
                 <div className="flex-1 relative">
                   <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    placeholder="Where do you want to live? (Auckland, Wellington...)"
+                    placeholder="Where do you want to live?"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className="pl-12 py-3 md:py-4 text-base md:text-lg border-0 focus:ring-2 focus:ring-[#FF5A5F] rounded-xl"

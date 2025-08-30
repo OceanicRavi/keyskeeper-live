@@ -13,15 +13,28 @@ import {
   Shield, 
   ArrowRight,
   User as UserIcon,
-  Settings
+  Settings,
+  Plus,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Calendar
 } from 'lucide-react'
-import { supabase, User } from '@/lib/supabase'
+import { supabase, User, Property } from '@/lib/supabase'
 import Link from 'next/link'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [properties, setProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({
+    totalProperties: 0,
+    totalUsers: 0,
+    totalViewings: 0,
+    totalRevenue: 0
+  })
 
   useEffect(() => {
     const checkUser = async () => {
@@ -41,15 +54,8 @@ export default function DashboardPage() {
 
         if (profile) {
           setUser(profile)
-          
-          // Redirect to role-specific dashboard if available
-          if (profile.role === 'landlord') {
-            router.push('/landlord')
-          } else if (profile.role === 'tenant') {
-            router.push('/tenant')
-          }
+          await fetchDashboardData(profile)
         } else {
-          // No profile found, redirect to login to complete setup
           router.push('/auth/login')
         }
       } catch (error) {
@@ -63,9 +69,72 @@ export default function DashboardPage() {
     checkUser()
   }, [router])
 
+  const fetchDashboardData = async (user: User) => {
+    try {
+      if (user.role === 'landlord') {
+        // Fetch landlord's properties
+        const { data: userProperties } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('landlord_id', user.id)
+          .order('created_at', { ascending: false })
+        
+        setProperties(userProperties || [])
+        setStats(prev => ({ ...prev, totalProperties: userProperties?.length || 0 }))
+      } else if (user.role === 'admin') {
+        // Fetch all properties and users for admin
+        const [propertiesRes, usersRes] = await Promise.all([
+          supabase.from('properties').select('*').order('created_at', { ascending: false }),
+          supabase.from('users').select('*')
+        ])
+        
+        setProperties(propertiesRes.data || [])
+        setStats({
+          totalProperties: propertiesRes.data?.length || 0,
+          totalUsers: usersRes.data?.length || 0,
+          totalViewings: 0, // You can implement this
+          totalRevenue: 0 // You can implement this
+        })
+      } else if (user.role === 'tenant') {
+        // Fetch available properties for tenant
+        const { data: availableProperties } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('is_available', true)
+          .order('created_at', { ascending: false })
+          .limit(6)
+        
+        setProperties(availableProperties || [])
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/')
+  }
+
+  const handleDeleteProperty = async (propertyId: string) => {
+    if (!confirm('Are you sure you want to delete this property?')) return
+    
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', propertyId)
+      
+      if (error) throw error
+      
+      // Refresh properties
+      if (user) {
+        await fetchDashboardData(user)
+      }
+    } catch (error) {
+      console.error('Error deleting property:', error)
+      alert('Failed to delete property')
+    }
   }
 
   if (loading) {
@@ -80,43 +149,404 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null // Will redirect to login
+    return null
   }
 
-  const roleConfig = {
-    landlord: {
-      title: 'Landlord Dashboard',
-      description: 'Manage your properties and tenants',
-      icon: Home,
-      color: 'bg-orange-100 text-orange-800',
-      href: '/landlord'
-    },
-    tenant: {
-      title: 'Tenant Dashboard',
-      description: 'Manage your rentals and payments',
-      icon: Users,
-      color: 'bg-blue-100 text-blue-800',
-      href: '/tenant'
-    },
-    maintenance: {
-      title: 'Maintenance Dashboard',
-      description: 'Handle property maintenance requests',
-      icon: Wrench,
-      color: 'bg-green-100 text-green-800',
-      href: '/maintenance'
-    },
-    admin: {
-      title: 'Admin Dashboard',
-      description: 'Platform administration and oversight',
-      icon: Shield,
-      color: 'bg-purple-100 text-purple-800',
-      href: '/admin'
-    }
+  // Render different dashboard views based on user role
+  if (user.role === 'landlord') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNavigation />
+        
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Landlord Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {user.full_name || user.email}</p>
+            </div>
+            <Link href="/list-property">
+              <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Property
+              </Button>
+            </Link>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Home className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Properties</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalProperties}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Add more stats cards as needed */}
+          </div>
+
+          {/* Properties Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Home className="h-5 w-5 mr-2" />
+                Your Properties
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {properties.length === 0 ? (
+                <div className="text-center py-8">
+                  <Home className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 mb-4">No properties listed yet</p>
+                  <Link href="/list-property">
+                    <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                      <Plus className="h-4 w-4 mr-2" />
+                      List Your First Property
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4">Property</th>
+                        <th className="text-left py-3 px-4">Location</th>
+                        <th className="text-left py-3 px-4">Price</th>
+                        <th className="text-left py-3 px-4">Status</th>
+                        <th className="text-left py-3 px-4">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {properties.map((property) => (
+                        <tr key={property.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 bg-gray-200 rounded-lg mr-3">
+                                {property.images?.[0] && (
+                                  <img 
+                                    src={property.images[0]} 
+                                    alt={property.title}
+                                    className="w-full h-full object-cover rounded-lg"
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-medium text-gray-900">{property.title}</p>
+                                <p className="text-sm text-gray-500 capitalize">{property.property_type}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-gray-700">
+                            {property.suburb}, {property.city}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-gray-900">
+                            ${property.price_per_week}/week
+                          </td>
+                          <td className="py-3 px-4">
+                            <Badge className={property.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                              {property.is_available ? 'Available' : 'Unavailable'}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center space-x-2">
+                              <Link href={`/properties/${property.id}`}>
+                                <Button variant="ghost" size="sm">
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                              <Button variant="ghost" size="sm">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteProperty(property.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
   }
 
-  const currentRole = roleConfig[user.role as keyof typeof roleConfig]
-  const RoleIcon = currentRole?.icon || UserIcon
+  if (user.role === 'tenant') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNavigation />
+        
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Tenant Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {user.full_name || user.email}</p>
+            </div>
+            <Link href="/search">
+              <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Search className="h-4 w-4 mr-2" />
+                Browse Properties
+              </Button>
+            </Link>
+          </div>
 
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Link href="/search">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <Search className="h-8 w-8 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Search Properties</h3>
+                  <p className="text-gray-600">Find your perfect rental</p>
+                </CardContent>
+              </Card>
+            </Link>
+            
+            <Link href="/maintenance-request">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <Wrench className="h-8 w-8 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Maintenance Request</h3>
+                  <p className="text-gray-600">Report any issues</p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <Calendar className="h-8 w-8 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">My Viewings</h3>
+                <p className="text-gray-600">Scheduled appointments</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Properties */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recently Added Properties</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {properties.map((property) => (
+                  <Card key={property.id} className="hover:shadow-lg transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="aspect-video bg-gray-200 rounded-lg mb-4">
+                        {property.images?.[0] && (
+                          <img 
+                            src={property.images[0]} 
+                            alt={property.title}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        )}
+                      </div>
+                      <h4 className="font-semibold text-gray-900 mb-2">{property.title}</h4>
+                      <p className="text-gray-600 text-sm mb-2">{property.suburb}, {property.city}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-[#FF5A5F]">${property.price_per_week}/week</span>
+                        <Link href={`/properties/${property.id}`}>
+                          <Button size="sm">View Details</Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
+  }
+
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNavigation />
+        
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600">System overview and management</p>
+            </div>
+          </div>
+
+          {/* Admin Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Home className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Properties</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalProperties}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Users className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Eye className="h-8 w-8 text-purple-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Viewings</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalViewings}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Shield className="h-8 w-8 text-orange-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Management Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Users className="h-5 w-5 mr-2" />
+                  User Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Manage system users and their roles</p>
+                <div className="flex space-x-2">
+                  <Button size="sm">View All Users</Button>
+                  <Button size="sm" variant="outline">Add User</Button>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Home className="h-5 w-5 mr-2" />
+                  Property Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">Oversee all property listings</p>
+                <div className="flex space-x-2">
+                  <Button size="sm">View All Properties</Button>
+                  <Button size="sm" variant="outline">Property Reports</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Properties Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Properties</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4">Property</th>
+                      <th className="text-left py-3 px-4">Landlord</th>
+                      <th className="text-left py-3 px-4">Location</th>
+                      <th className="text-left py-3 px-4">Price</th>
+                      <th className="text-left py-3 px-4">Status</th>
+                      <th className="text-left py-3 px-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {properties.slice(0, 10).map((property) => (
+                      <tr key={property.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4">
+                          <p className="font-medium text-gray-900">{property.title}</p>
+                          <p className="text-sm text-gray-500 capitalize">{property.property_type}</p>
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {property.landlord_id}
+                        </td>
+                        <td className="py-3 px-4 text-gray-700">
+                          {property.suburb}, {property.city}
+                        </td>
+                        <td className="py-3 px-4 font-semibold">
+                          ${property.price_per_week}/week
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge className={property.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                            {property.is_available ? 'Available' : 'Unavailable'}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteProperty(property.id)}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
+  }
+
+  // Default dashboard (fallback)
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavigation />
@@ -151,8 +581,8 @@ export default function DashboardPage() {
                   </h3>
                   <p className="text-gray-600">{user.email}</p>
                   <div className="flex items-center mt-1">
-                    <Badge className={currentRole?.color}>
-                      <RoleIcon className="h-3 w-3 mr-1" />
+                    <Badge className="bg-gray-100 text-gray-800">
+                      <UserIcon className="h-3 w-3 mr-1" />
                       {user.role}
                     </Badge>
                     {user.is_verified && (
@@ -170,29 +600,6 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Role-Specific Dashboard Access */}
-        {currentRole && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <RoleIcon className="h-5 w-5 mr-2" />
-                {currentRole.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                {currentRole.description}
-              </p>
-              <Link href={currentRole.href}>
-                <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
-                  Go to {user.role} Dashboard
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Quick Actions */}
         <Card className="mb-8">

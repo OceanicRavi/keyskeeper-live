@@ -39,16 +39,8 @@ export default function LoginPage() {
         .eq('auth_id', data.user.id)
         .single()
 
-      // Redirect based on role
-      if (profile?.role === 'landlord') {
-        router.push('/landlord')
-      } else if (profile?.role === 'tenant') {
-        router.push('/tenant')
-      } else if (profile?.role === 'maintenance') {
-        router.push('/dashboard')
-      } else {
-        router.push('/dashboard')
-      }
+      // Always redirect to dashboard first, then dashboard will handle role-specific routing
+      router.push('/dashboard')
     } catch (error: any) {
       setError(error.message || 'An error occurred during login')
     } finally {
