@@ -57,7 +57,68 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* New Zealand Map Background */}
+      <div className="absolute inset-0 opacity-5">
+        <svg
+          viewBox="0 0 1200 800"
+          className="w-full h-full object-contain"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* North Island - Geometric Polygon Style */}
+          <polygon
+            points="600,200 650,180 700,190 720,220 740,250 760,280 750,320 730,350 700,380 670,400 640,420 610,440 580,430 560,410 540,380 530,350 540,320 560,290 580,260 590,230"
+            fill="url(#loginGradient1)"
+            stroke="#10B981"
+            strokeWidth="2"
+            opacity="0.8"
+          />
+          
+          {/* South Island - Geometric Polygon Style */}
+          <polygon
+            points="580,460 620,450 660,470 690,500 710,540 720,580 710,620 690,650 660,680 630,700 600,710 570,700 540,680 520,650 510,620 520,580 540,540 560,500"
+            fill="url(#loginGradient2)"
+            stroke="#3B82F6"
+            strokeWidth="2"
+            opacity="0.8"
+          />
+          
+          {/* Stewart Island */}
+          <polygon
+            points="590,720 610,715 620,725 615,735 605,740 595,735"
+            fill="url(#loginGradient3)"
+            stroke="#8B5CF6"
+            strokeWidth="1"
+            opacity="0.8"
+          />
+          
+          {/* Gradients for colorful effect */}
+          <defs>
+            <linearGradient id="loginGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#10B981" stopOpacity="0.6"/>
+              <stop offset="50%" stopColor="#059669" stopOpacity="0.4"/>
+              <stop offset="100%" stopColor="#047857" stopOpacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="loginGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6"/>
+              <stop offset="50%" stopColor="#2563EB" stopOpacity="0.4"/>
+              <stop offset="100%" stopColor="#1D4ED8" stopOpacity="0.6"/>
+            </linearGradient>
+            <linearGradient id="loginGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.6"/>
+              <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.6"/>
+            </linearGradient>
+          </defs>
+          
+          {/* Decorative dots for major cities */}
+          <circle cx="640" cy="280" r="4" fill="#FF5A5F" opacity="0.8"/> {/* Auckland */}
+          <circle cx="620" cy="380" r="3" fill="#FF5A5F" opacity="0.8"/> {/* Wellington */}
+          <circle cx="650" cy="580" r="3" fill="#FF5A5F" opacity="0.8"/> {/* Christchurch */}
+          <circle cx="580" cy="320" r="2" fill="#FF5A5F" opacity="0.8"/> {/* Hamilton */}
+        </svg>
+      </div>
+      
+      {/* Content overlay */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6">
           <ArrowLeft className="h-4 w-4 mr-1" />
