@@ -12,7 +12,7 @@ import {
   Wrench, 
   Shield, 
   ArrowRight,
-  User,
+  User as UserIcon,
   Settings
 } from 'lucide-react'
 import { supabase, User } from '@/lib/supabase'
@@ -112,7 +112,7 @@ export default function DashboardPage() {
   }
 
   const currentRole = roleConfig[user.role as keyof typeof roleConfig]
-  const RoleIcon = currentRole?.icon || User
+  const RoleIcon = currentRole?.icon || UserIcon
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center">
-              <User className="h-5 w-5 mr-2" />
+              <UserIcon className="h-5 w-5 mr-2" />
               Your Profile
             </CardTitle>
           </CardHeader>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="h-6 w-6 text-gray-600" />
+                  <UserIcon className="h-6 w-6 text-gray-600" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">
