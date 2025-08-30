@@ -110,7 +110,18 @@ export default function SignupPage() {
   const RoleIcon = currentRole.icon
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
+      {/* New Zealand Map Background - Right Side */}
+      <div 
+        className="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-20"
+        style={{
+          backgroundImage: 'url("/nz-map.png")',
+          backgroundPosition: 'center right'
+        }}
+      />
+      
+      {/* Signup Form - Left Side */}
+      <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6">
           <ArrowLeft className="h-4 w-4 mr-1" />
@@ -301,6 +312,7 @@ export default function SignupPage() {
             </a>
           </p>
         </div>
+      </div>
       </div>
     </div>
   )
