@@ -37,7 +37,7 @@ export default function DashboardPage() {
           .from('users')
           .select('*')
           .eq('auth_id', authUser.id)
-          .single()
+          .maybeSingle()
 
         if (profile) {
           setUser(profile)
@@ -48,6 +48,9 @@ export default function DashboardPage() {
           } else if (profile.role === 'tenant') {
             router.push('/tenant')
           }
+        } else {
+          // No profile found, redirect to login to complete setup
+          router.push('/auth/login')
         }
       } catch (error) {
         console.error('Error fetching user:', error)
