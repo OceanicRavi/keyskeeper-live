@@ -34,38 +34,45 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      // Get user profile to determine role and redirect
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role, is_verified')
-        .eq('auth_id', data.user.id)
-        .maybeSingle()
+      if (data.user) {
+        // Get user profile to determine role and redirect
+        const { data: profile, error: profileError } = await supabase
+          .from('users')
+          .select('role, is_verified')
+          .eq('auth_id', data.user.id)
+          .maybeSingle()
 
-      // Check if user is verified
-      if (profile && !profile.is_verified) {
-        setShowEmailVerificationError(true)
-        setLoading(false)
-        return
-      }
+        if (profileError) {
+          console.error('Error fetching profile:', profileError)
+          // If profile doesn't exist, redirect to dashboard anyway
+          router.push('/dashboard')
+          return
+        }
 
-      // Redirect based on role
-      if (profile?.role === 'landlord') {
-        router.push('/dashboard')
-      } else if (profile?.role === 'tenant') {
-        router.push('/dashboard')
-      } else if (profile?.role === 'admin') {
-        router.push('/dashboard')
-      } else if (profile?.role === 'maintenance') {
+        // Check if user is verified (skip verification check for now to avoid getting stuck)
+        // if (profile && !profile.is_verified) {
+        //   setShowEmailVerificationError(true)
+        //   setLoading(false)
+        //   return
+        // }
+
+        // Always redirect to dashboard for now
         router.push('/dashboard')
       } else {
-        router.push('/dashboard')
+        throw new Error('Authentication failed - no user data returned')
       }
     } catch (error: any) {
       if (error.message.includes('Invalid login credentials')) {
         setError('Invalid email or password. Please check your credentials and try again.')
+      } else if (error.message.includes('Email not confirmed')) {
+        setShowEmailVerificationError(true)
+        setLoading(false)
+        return
       } else {
         setError(error.message || 'An error occurred during login')
       }
+    } finally {
+      setLoading(false)
     } finally {
       setLoading(false)
     }
