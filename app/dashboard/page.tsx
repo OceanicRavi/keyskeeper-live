@@ -736,29 +736,35 @@ export default function DashboardPage() {
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Urgent Requests</h3>
-                <p className="text-gray-600">View and respond to urgent maintenance</p>
-              </CardContent>
-            </Card>
+            <Link href="/maintenance/urgent">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Urgent Requests</h3>
+                  <p className="text-gray-600">View and respond to urgent maintenance</p>
+                </CardContent>
+              </Card>
+            </Link>
             
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <Calendar className="h-8 w-8 text-blue-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Schedule</h3>
-                <p className="text-gray-600">Manage your maintenance schedule</p>
-              </CardContent>
-            </Card>
+            <Link href="/maintenance/schedule">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <Calendar className="h-8 w-8 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Schedule</h3>
+                  <p className="text-gray-600">Manage your maintenance schedule</p>
+                </CardContent>
+              </Card>
+            </Link>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <FileText className="h-8 w-8 text-green-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Reports</h3>
-                <p className="text-gray-600">View completed work reports</p>
-              </CardContent>
-            </Card>
+            <Link href="/maintenance/reports">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-6 text-center">
+                  <FileText className="h-8 w-8 text-green-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Reports</h3>
+                  <p className="text-gray-600">View completed work reports</p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Recent Maintenance Requests */}
@@ -797,10 +803,17 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button size="sm" variant="outline" title="View details">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" title="Accept request">
+                        <Link href={`/maintenance/requests/${request.id}`}>
+                          <Button size="sm" variant="outline" title="View details">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button 
+                          size="sm" 
+                          title="Accept request"
+                          onClick={() => handleAcceptRequest(request.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
                           Accept
                         </Button>
                       </div>
@@ -944,4 +957,26 @@ export default function DashboardPage() {
       <BottomNavigation />
     </div>
   )
+
+  // Helper function to handle accepting maintenance requests
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({ 
+          assigned_to: user.id,
+          status: 'in_progress'
+        })
+        .eq('id', requestId)
+
+      if (error) throw error
+      
+      // Refresh data
+      if (user) {
+        await fetchDashboardData(user)
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to accept maintenance request')
+    }
+  }
 }
