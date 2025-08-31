@@ -82,7 +82,7 @@ export default function MaintenanceSchedulePage() {
         .select('*, property:properties(*)')
         .or(`assigned_to.eq.${user.id},assigned_to.is.null`)
         .in('status', ['in_progress', 'open'])
-        .order('scheduled_date', { ascending: true, nullsLast: true })
+        .order('scheduled_date', { ascending: true })
       
       setScheduledRequests(requests || [])
     } catch (error) {
