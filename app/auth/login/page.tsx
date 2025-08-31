@@ -73,8 +73,6 @@ export default function LoginPage() {
       }
     } finally {
       setLoading(false)
-    } finally {
-      setLoading(false)
     }
   }
 
