@@ -172,34 +172,6 @@ export function TopNavigation() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/search" 
-              className="text-gray-700 hover:text-[#FF5A5F] transition-colors font-medium"
-            >
-              Browse Properties
-            </Link>
-            <Link 
-              href="/landlord" 
-              className="text-gray-700 hover:text-[#FF5A5F] transition-colors font-medium"
-            >
-              For Landlords
-            </Link>
-            <Link 
-              href="/tenant" 
-              className="text-gray-700 hover:text-[#FF5A5F] transition-colors font-medium"
-            >
-              For Tenants
-            </Link>
-            <Link 
-              href="/property-appraisal" 
-              className="text-gray-700 hover:text-[#FF5A5F] transition-colors font-medium"
-            >
-              Free Appraisal
-            </Link>
-          </div>
-
           {/* User Menu / Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {loading ? (
