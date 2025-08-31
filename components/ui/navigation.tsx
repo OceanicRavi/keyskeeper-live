@@ -164,9 +164,12 @@ export function TopNavigation() {
               src="/keyskeeperlogo.png"
               alt="Keyskeeper"
               width={120}
-              height={40}
-              className="h-8 w-auto"
+              height={70}
+              className="h-14 w-auto"
             />
+            <span className="text-3xl font-bold text-gray-700 drop-shadow-lg hover:text-[#FF5A5F] transition-colors duration-300">
+              <span style={{ color: '#FF5A5F' }}>K</span>eys<span style={{ color: '#FF5A5F' }}>K</span>eeper
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
