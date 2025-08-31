@@ -521,26 +521,4 @@ export default function MaintenanceSchedulePage() {
       <BottomNavigation />
     </div>
   )
-
-  // Helper function to mark requests as completed
-  const markAsCompleted = async (requestId: string) => {
-    try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({ 
-          status: 'completed',
-          completed_date: new Date().toISOString()
-        })
-        .eq('id', requestId)
-
-      if (error) throw error
-      
-      // Refresh data
-      if (user) {
-        await fetchScheduledRequests(user)
-      }
-    } catch (error) {
-      console.error('Error marking request as completed:', error)
-    }
-  }
 }
