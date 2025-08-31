@@ -6,6 +6,7 @@ import { TopNavigation, BottomNavigation } from '@/components/ui/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { 
   Home, 
   Users, 
@@ -27,7 +28,7 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react'
-import { supabase, User, Property } from '@/lib/supabase'
+import { supabase, User, Property, MaintenanceRequest, Payment } from '@/lib/supabase'
 import Link from 'next/link'
 import { LogOut } from 'lucide-react'
 
@@ -35,11 +36,15 @@ export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [properties, setProperties] = useState<Property[]>([])
+  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([])
+  const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null)
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalUsers: 0,
-    totalViewings: 0,
+    totalMaintenanceRequests: 0,
     totalRevenue: 0
   })
 
@@ -89,18 +94,26 @@ export default function DashboardPage() {
         setProperties(userProperties || [])
         setStats(prev => ({ ...prev, totalProperties: userProperties?.length || 0 }))
       } else if (user.role === 'admin') {
-        // Fetch all properties and users for admin
-        const [propertiesRes, usersRes] = await Promise.all([
+        // Fetch all data for admin dashboard
+        const [propertiesRes, usersRes, maintenanceRes, paymentsRes] = await Promise.all([
           supabase.from('properties').select('*').order('created_at', { ascending: false }),
-          supabase.from('users').select('*')
+          supabase.from('users').select('*'),
+          supabase.from('maintenance_requests').select('*').order('created_at', { ascending: false }),
+          supabase.from('payments').select('*').eq('status', 'paid').gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
         ])
         
         setProperties(propertiesRes.data || [])
+        setMaintenanceRequests(maintenanceRes.data || [])
+        setPayments(paymentsRes.data || [])
+        
+        // Calculate real stats
+        const totalRevenue = (paymentsRes.data || []).reduce((sum, payment) => sum + payment.amount, 0)
+        
         setStats({
           totalProperties: propertiesRes.data?.length || 0,
           totalUsers: usersRes.data?.length || 0,
-          totalViewings: 0, // You can implement this
-          totalRevenue: 0 // You can implement this
+          totalMaintenanceRequests: maintenanceRes.data?.length || 0,
+          totalRevenue: totalRevenue
         })
       } else if (user.role === 'tenant') {
         // Fetch available properties for tenant
@@ -113,20 +126,20 @@ export default function DashboardPage() {
         
         setProperties(availableProperties || [])
       } else if (user.role === 'maintenance') {
-        // Fetch maintenance requests for maintenance user
-        const { data: maintenanceRequests } = await supabase
+        // Fetch maintenance requests assigned to this user
+        const { data: userMaintenanceRequests } = await supabase
           .from('maintenance_requests')
           .select('*, property:properties(*)')
           .or('assigned_to.eq.' + user.id + ',assigned_to.is.null')
           .order('created_at', { ascending: false })
           .limit(10)
         
-        // For maintenance users, we'll use properties array to store maintenance data
+        setMaintenanceRequests(userMaintenanceRequests || [])
         setProperties([])
         setStats({
           totalProperties: 0,
           totalUsers: 0,
-          totalViewings: maintenanceRequests?.length || 0,
+          totalMaintenanceRequests: userMaintenanceRequests?.length || 0,
           totalRevenue: 0
         })
       }
@@ -140,14 +153,19 @@ export default function DashboardPage() {
     router.push('/')
   }
 
-  const handleDeleteProperty = async (propertyId: string) => {
-    if (!confirm('Are you sure you want to delete this property?')) return
+  const openDeleteDialog = (propertyId: string) => {
+    setPropertyToDelete(propertyId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteProperty = async () => {
+    if (!propertyToDelete) return
     
     try {
       const { error } = await supabase
         .from('properties')
         .delete()
-        .eq('id', propertyId)
+        .eq('id', propertyToDelete)
       
       if (error) throw error
       
@@ -155,9 +173,12 @@ export default function DashboardPage() {
       if (user) {
         await fetchDashboardData(user)
       }
+      
+      setDeleteDialogOpen(false)
+      setPropertyToDelete(null)
     } catch (error) {
       console.error('Error deleting property:', error)
-      alert('Failed to delete property')
+      setError('Failed to delete property')
     }
   }
 
@@ -282,13 +303,15 @@ export default function DashboardPage() {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
+                              <Link href={`/landlord/properties/${property.id}/edit`}>
+                                <Button variant="ghost" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </Link>
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                onClick={() => handleDeleteProperty(property.id)}
+                                onClick={() => openDeleteDialog(property.id)}
                                 className="text-red-600 hover:text-red-700"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -303,6 +326,31 @@ export default function DashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Property</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-gray-600">
+                  Are you sure you want to delete this property? This action cannot be undone and will remove all associated data including leases, payments, and maintenance requests.
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleDeleteProperty}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete Property
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <BottomNavigation />
@@ -445,7 +493,7 @@ export default function DashboardPage() {
                   <Wrench className="h-8 w-8 text-purple-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Maintenance Requests</p>
-                    <p className="text-2xl font-bold text-gray-900">12</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalMaintenanceRequests}</p>
                   </div>
                 </div>
               </CardContent>
@@ -457,7 +505,7 @@ export default function DashboardPage() {
                   <DollarSign className="h-8 w-8 text-orange-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">$24,500</p>
+                    <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
                   </div>
                 </div>
               </CardContent>
@@ -496,8 +544,12 @@ export default function DashboardPage() {
               <CardContent>
                 <p className="text-gray-600 mb-4">Oversee all property listings</p>
                 <div className="flex space-x-2">
-                  <Button size="sm">View All Properties</Button>
-                  <Button size="sm" variant="outline">Property Reports</Button>
+                  <Link href="/admin/properties">
+                    <Button size="sm">View All Properties</Button>
+                  </Link>
+                  <Link href="/admin/reports">
+                    <Button size="sm" variant="outline">Property Reports</Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -544,17 +596,22 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                            <Link href={`/properties/${property.id}`}>
+                              <Button variant="ghost" size="sm" title="View property">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Link href={`/landlord/properties/${property.id}/edit`}>
+                              <Button variant="ghost" size="sm" title="Edit property">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </Link>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => handleDeleteProperty(property.id)}
+                              onClick={() => openDeleteDialog(property.id)}
                               className="text-red-600 hover:text-red-700"
+                              title="Delete property"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -567,6 +624,31 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Property</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-gray-600">
+                  Are you sure you want to delete this property? This action cannot be undone and will remove all associated data including leases, payments, and maintenance requests.
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleDeleteProperty}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete Property
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <BottomNavigation />
@@ -595,7 +677,9 @@ export default function DashboardPage() {
                   <AlertTriangle className="h-8 w-8 text-red-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Urgent Requests</p>
-                    <p className="text-2xl font-bold text-gray-900">3</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {maintenanceRequests.filter(req => req.priority === 'urgent').length}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -607,7 +691,9 @@ export default function DashboardPage() {
                   <Clock className="h-8 w-8 text-orange-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">In Progress</p>
-                    <p className="text-2xl font-bold text-gray-900">8</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {maintenanceRequests.filter(req => req.status === 'in_progress').length}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -619,7 +705,12 @@ export default function DashboardPage() {
                   <CheckCircle className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Completed Today</p>
-                    <p className="text-2xl font-bold text-gray-900">5</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {maintenanceRequests.filter(req => 
+                        req.status === 'completed' && 
+                        new Date(req.completed_date || '').toDateString() === new Date().toDateString()
+                      ).length}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -631,7 +722,12 @@ export default function DashboardPage() {
                   <DollarSign className="h-8 w-8 text-blue-600" />
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">This Month</p>
-                    <p className="text-2xl font-bold text-gray-900">$3,200</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${maintenanceRequests
+                        .filter(req => req.actual_cost && new Date(req.completed_date || '').getMonth() === new Date().getMonth())
+                        .reduce((sum, req) => sum + (req.actual_cost || 0), 0)
+                        .toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -671,62 +767,47 @@ export default function DashboardPage() {
               <CardTitle>Recent Maintenance Requests</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[
-                  {
-                    id: '1',
-                    title: 'Leaking tap in kitchen',
-                    property: '123 Queen Street, Auckland',
-                    priority: 'high',
-                    status: 'open',
-                    created: '2 hours ago'
-                  },
-                  {
-                    id: '2',
-                    title: 'Broken window latch',
-                    property: '456 King Street, Wellington',
-                    priority: 'medium',
-                    status: 'in_progress',
-                    created: '1 day ago'
-                  },
-                  {
-                    id: '3',
-                    title: 'Heating not working',
-                    property: '789 Main Road, Christchurch',
-                    priority: 'urgent',
-                    status: 'open',
-                    created: '30 minutes ago'
-                  }
-                ].map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{request.title}</h4>
-                      <p className="text-sm text-gray-600">{request.property}</p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <Badge className={
-                          request.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                          request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }>
-                          {request.priority}
-                        </Badge>
-                        <Badge variant="outline" className="capitalize">
-                          {request.status.replace('_', ' ')}
-                        </Badge>
-                        <span className="text-xs text-gray-500">{request.created}</span>
+              {maintenanceRequests.length === 0 ? (
+                <div className="text-center py-8">
+                  <Wrench className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No maintenance requests found</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {maintenanceRequests.slice(0, 10).map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{request.title}</h4>
+                        <p className="text-sm text-gray-600">{request.description}</p>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <Badge className={
+                            request.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                            request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                            request.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-green-100 text-green-800'
+                          }>
+                            {request.priority}
+                          </Badge>
+                          <Badge variant="outline" className="capitalize">
+                            {request.status.replace('_', ' ')}
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {new Date(request.created_at).toLocaleDateString('en-NZ')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button size="sm" variant="outline" title="View details">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" title="Accept request">
+                          Accept
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button size="sm">
-                        Accept
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
