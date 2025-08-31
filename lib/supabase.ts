@@ -126,6 +126,7 @@ export interface Payment {
 }
 
 export interface MaintenanceRequest {
+  property: any
   id: string
   property_id: string
   room_id?: string

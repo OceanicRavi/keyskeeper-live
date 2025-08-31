@@ -79,7 +79,7 @@ export default function LoginPage() {
           
           <div className="text-center">
             <Image
-              src="/keyskeeperlogo.png"
+              src="/keyskeeper.png"
               alt="Keyskeeper"
               width={120}
               height={70}

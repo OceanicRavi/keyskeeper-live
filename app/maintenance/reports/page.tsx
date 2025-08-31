@@ -265,9 +265,9 @@ export default function MaintenanceReportsPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div>
-                              <p className="font-medium text-gray-900">{request.property?.title || 'Unknown Property'}</p>
+                              <p className="font-medium text-gray-900">{request?.property?.title || 'Unknown Property'}</p>
                               <p className="text-sm text-gray-600">
-                                {request.property?.suburb}, {request.property?.city}
+                                {request?.property?.suburb}, {request?.property?.city}
                               </p>
                             </div>
                           </td>

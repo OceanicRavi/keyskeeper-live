@@ -161,7 +161,7 @@ export function TopNavigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src="/keyskeeperlogo.png"
+              src="/keyskeeper.png"
               alt="Keyskeeper"
               width={120}
               height={70}

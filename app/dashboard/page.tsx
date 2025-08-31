@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>('') // Add this missing state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null)
   const [stats, setStats] = useState({
@@ -182,6 +183,28 @@ export default function DashboardPage() {
     }
   }
 
+  // Helper function to handle accepting maintenance requests
+  const handleAcceptRequest = async (requestId: string) => {
+    try {
+      const { error } = await supabase
+        .from('maintenance_requests')
+        .update({ 
+          assigned_to: user?.id,
+          status: 'in_progress'
+        })
+        .eq('id', requestId)
+
+      if (error) throw error
+      
+      // Refresh data
+      if (user) {
+        await fetchDashboardData(user)
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to accept maintenance request')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -197,6 +220,25 @@ export default function DashboardPage() {
     return null
   }
 
+  // Error display component
+  const ErrorDisplay = () => {
+    if (!error) return null
+    
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <p>{error}</p>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setError('')}
+          className="mt-2 text-red-600 hover:text-red-800"
+        >
+          Dismiss
+        </Button>
+      </div>
+    )
+  }
+
   // Render different dashboard views based on user role
   if (user.role === 'landlord') {
     return (
@@ -204,6 +246,8 @@ export default function DashboardPage() {
         <TopNavigation />
         
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <ErrorDisplay />
+          
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Landlord Dashboard</h1>
@@ -364,6 +408,8 @@ export default function DashboardPage() {
         <TopNavigation />
         
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <ErrorDisplay />
+          
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Tenant Dashboard</h1>
@@ -454,6 +500,8 @@ export default function DashboardPage() {
         <TopNavigation />
         
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <ErrorDisplay />
+          
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -662,6 +710,8 @@ export default function DashboardPage() {
         <TopNavigation />
         
         <div className="max-w-7xl mx-auto px-4 py-8">
+          <ErrorDisplay />
+          
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Maintenance Dashboard</h1>
@@ -836,6 +886,8 @@ export default function DashboardPage() {
       <TopNavigation />
       
       <div className="max-w-4xl mx-auto px-4 py-8">
+        <ErrorDisplay />
+        
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome to Keyskeeper
@@ -957,26 +1009,4 @@ export default function DashboardPage() {
       <BottomNavigation />
     </div>
   )
-
-  // Helper function to handle accepting maintenance requests
-  const handleAcceptRequest = async (requestId: string) => {
-    try {
-      const { error } = await supabase
-        .from('maintenance_requests')
-        .update({ 
-          assigned_to: user.id,
-          status: 'in_progress'
-        })
-        .eq('id', requestId)
-
-      if (error) throw error
-      
-      // Refresh data
-      if (user) {
-        await fetchDashboardData(user)
-      }
-    } catch (error: any) {
-      setError(error.message || 'Failed to accept maintenance request')
-    }
-  }
 }
