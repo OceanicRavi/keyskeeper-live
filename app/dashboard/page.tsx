@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { supabase, User, Property } from '@/lib/supabase'
 import Link from 'next/link'
+import { LogOut } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -429,10 +430,10 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Users className="h-8 w-8 text-green-600" />
+                  <Home className="h-8 w-8 text-green-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                    <p className="text-sm font-medium text-gray-600">Total Properties</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.totalProperties}</p>
                   </div>
                 </div>
               </CardContent>
@@ -786,10 +787,10 @@ export default function DashboardPage() {
                     {user.is_verified && (
                       <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
                         <CheckCircle className="h-3 w-3 mr-1" />
-                        Verified
+                <Users className="h-8 w-8 text-blue-600" />
                       </Badge>
-                    )}
-                  </div>
+                  <p className="text-sm font-medium text-gray-600">Total Users</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
                 </div>
               </div>
               <Button variant="outline" size="sm">

@@ -94,7 +94,7 @@ export default function SignupPage() {
         if (formData.role === 'landlord') {
           router.push('/onboarding/landlord')
         } else if (formData.role === 'tenant') {
-          router.push('/dashboard')
+          router.push('/onboarding/tenant')
         } else {
           router.push('/dashboard')
         }
