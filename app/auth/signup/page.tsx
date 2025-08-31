@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { Eye, EyeOff, ArrowLeft, Home, Users, Wrench, Shield } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, Home, Users, Wrench, Shield, Mail, CheckCircle } from 'lucide-react'
 import { supabase, UserRole } from '@/lib/supabase'
 
 const roleConfig = {
@@ -54,6 +54,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showEmailExists, setShowEmailExists] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -66,8 +67,22 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setShowEmailExists(false)
 
     try {
+      // Check if email already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', formData.email)
+        .maybeSingle()
+
+      if (existingUser) {
+        setShowEmailExists(true)
+        setLoading(false)
+        return
+      }
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -86,6 +101,7 @@ export default function SignupPage() {
             full_name: formData.fullName,
             phone: formData.phone,
             role: formData.role,
+            is_verified: false
           })
 
         if (profileError) throw profileError
@@ -108,6 +124,84 @@ export default function SignupPage() {
 
   const currentRole = roleConfig[formData.role as UserRole]
   const RoleIcon = currentRole.icon
+
+  // Show email exists error with sign in option
+  if (showEmailExists) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
+        <div 
+          className="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-20"
+          style={{
+            backgroundImage: 'url("/nz-map.png")',
+            backgroundPosition: 'center right'
+          }}
+        />
+        
+        <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to home
+            </Link>
+            
+            <div className="text-center">
+              <Image
+                src="/keyskeeper.png"
+                alt="Keyskeeper"
+                width={120}
+                height={70}
+                className="h-12 w-auto mx-auto mb-6"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <Card className="shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Mail className="h-8 w-8 text-orange-600" />
+                </div>
+                
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Email Already Registered
+                </h2>
+                
+                <p className="text-gray-600 mb-6">
+                  An account with <strong>{formData.email}</strong> already exists. 
+                  Please sign in to your existing account instead.
+                </p>
+
+                <div className="space-y-4">
+                  <Link href="/auth/login">
+                    <Button className="w-full bg-[#FF5A5F] hover:bg-[#E8474B]">
+                      Sign In to Existing Account
+                    </Button>
+                  </Link>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowEmailExists(false)}
+                    className="w-full"
+                  >
+                    Try Different Email
+                  </Button>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    Forgot your password?{' '}
+                    <Link href="/auth/forgot-password" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                      Reset it here
+                    </Link>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
