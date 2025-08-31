@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft, Mail, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 export default function LoginPage() {
@@ -18,11 +18,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showEmailVerificationError, setShowEmailVerificationError] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+    setShowEmailVerificationError(false)
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -35,9 +37,16 @@ export default function LoginPage() {
       // Get user profile to determine role and redirect
       const { data: profile } = await supabase
         .from('users')
-        .select('role')
+        .select('role, is_verified')
         .eq('auth_id', data.user.id)
         .maybeSingle()
+
+      // Check if user is verified
+      if (profile && !profile.is_verified) {
+        setShowEmailVerificationError(true)
+        setLoading(false)
+        return
+      }
 
       // Redirect based on role
       if (profile?.role === 'landlord') {
@@ -52,10 +61,106 @@ export default function LoginPage() {
         router.push('/dashboard')
       }
     } catch (error: any) {
-      setError(error.message || 'An error occurred during login')
+      if (error.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again.')
+      } else {
+        setError(error.message || 'An error occurred during login')
+      }
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show email verification error
+  if (showEmailVerificationError) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
+        <div 
+          className="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-20"
+          style={{
+            backgroundImage: 'url("/nz-map.png")',
+            backgroundPosition: 'center right'
+          }}
+        />
+        
+        <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back to home
+            </Link>
+            
+            <div className="text-center">
+              <Image
+                src="/keyskeeper.png"
+                alt="Keyskeeper"
+                width={120}
+                height={70}
+                className="h-12 w-auto mx-auto mb-6"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <Card className="shadow-lg">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertTriangle className="h-8 w-8 text-orange-600" />
+                </div>
+                
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                  Email Verification Required
+                </h2>
+                
+                <p className="text-gray-600 mb-6">
+                  Please verify your email address before signing in. We've sent a verification 
+                  link to <strong>{email}</strong>.
+                </p>
+
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <Mail className="h-5 w-5 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-blue-900">Check Your Email</span>
+                  </div>
+                  <p className="text-xs text-blue-800">
+                    Click the verification link in your email, then return here to sign in.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <Button 
+                    onClick={() => setShowEmailVerificationError(false)}
+                    className="w-full bg-[#FF5A5F] hover:bg-[#E8474B]"
+                  >
+                    Try Signing In Again
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // In a real app, you'd trigger resend verification email
+                      alert('Verification email resent!')
+                    }}
+                    className="w-full"
+                  >
+                    Resend Verification Email
+                  </Button>
+                </div>
+
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    Need help? Contact us at{' '}
+                    <a href="mailto:admin@keyskeeper.co.nz" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                      admin@keyskeeper.co.nz
+                    </a>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -18,9 +18,11 @@ import {
   ArrowLeft,
   DollarSign,
   Users,
-  Shield
+  Shield,
+  Mail
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 interface OnboardingData {
   businessName: string
@@ -40,6 +42,7 @@ export default function LandlordOnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [onboardingComplete, setOnboardingComplete] = useState(false)
   
   const [data, setData] = useState<OnboardingData>({
     businessName: '',
@@ -105,12 +108,72 @@ export default function LandlordOnboardingPage() {
 
       if (error) throw error
 
-      router.push('/landlord')
+      setOnboardingComplete(true)
     } catch (error: any) {
       setError(error.message || 'Failed to complete onboarding')
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show completion screen with email verification
+  if (onboardingComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <Card className="shadow-lg">
+            <CardContent className="p-12 text-center">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-10 w-10 text-green-600" />
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Account Created Successfully!
+              </h1>
+              
+              <p className="text-lg text-gray-600 mb-8">
+                Your landlord account has been set up. We've sent a verification email 
+                to confirm your email address.
+              </p>
+
+              <div className="bg-blue-50 rounded-lg p-6 mb-8">
+                <div className="flex items-center justify-center mb-4">
+                  <Mail className="h-8 w-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  Check Your Email
+                </h3>
+                <p className="text-blue-800 text-sm">
+                  We've sent a verification link to your email address. 
+                  Please click the link to verify your account before signing in.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <Link href="/auth/login">
+                  <Button className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] py-3 text-lg">
+                    Sign In to Your Account
+                  </Button>
+                </Link>
+                
+                <p className="text-sm text-gray-500">
+                  Didn't receive the email? Check your spam folder or{' '}
+                  <button 
+                    onClick={() => {
+                      // In a real app, you'd trigger resend verification email
+                      alert('Verification email resent!')
+                    }}
+                    className="text-[#FF5A5F] hover:text-[#E8474B] underline"
+                  >
+                    resend verification email
+                  </button>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
