@@ -444,17 +444,4 @@ export default function AdminPropertiesPage() {
     </div>
   )
 
-  const togglePropertyAvailability = async (propertyId: string, currentStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('properties')
-        .update({ is_available: !currentStatus })
-        .eq('id', propertyId)
-
-      if (error) throw error
-      await fetchProperties()
-    } catch (error: any) {
-      setError(error.message || 'Failed to update property status')
-    }
-  }
 }
