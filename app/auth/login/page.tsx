@@ -37,9 +37,9 @@ export default function LoginPage() {
         .from('users')
         .select('role')
         .eq('auth_id', data.user.id)
-        .single()
+        .maybeSingle()
 
-      // Always redirect to dashboard first, then dashboard will handle role-specific routing
+      // Redirect to dashboard - it will handle role-specific content
       router.push('/dashboard')
     } catch (error: any) {
       setError(error.message || 'An error occurred during login')

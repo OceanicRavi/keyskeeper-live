@@ -19,7 +19,13 @@ import {
   Eye,
   Edit,
   Trash2,
-  Calendar
+  Calendar,
+  DollarSign,
+  FileText,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  Clock
 } from 'lucide-react'
 import { supabase, User, Property } from '@/lib/supabase'
 import Link from 'next/link'
@@ -105,6 +111,23 @@ export default function DashboardPage() {
           .limit(6)
         
         setProperties(availableProperties || [])
+      } else if (user.role === 'maintenance') {
+        // Fetch maintenance requests for maintenance user
+        const { data: maintenanceRequests } = await supabase
+          .from('maintenance_requests')
+          .select('*, property:properties(*)')
+          .or('assigned_to.eq.' + user.id + ',assigned_to.is.null')
+          .order('created_at', { ascending: false })
+          .limit(10)
+        
+        // For maintenance users, we'll use properties array to store maintenance data
+        setProperties([])
+        setStats({
+          totalProperties: 0,
+          totalUsers: 0,
+          totalViewings: maintenanceRequests?.length || 0,
+          totalRevenue: 0
+        })
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -418,10 +441,10 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Eye className="h-8 w-8 text-purple-600" />
+                  <Wrench className="h-8 w-8 text-purple-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Viewings</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalViewings}</p>
+                    <p className="text-sm font-medium text-gray-600">Maintenance Requests</p>
+                    <p className="text-2xl font-bold text-gray-900">12</p>
                   </div>
                 </div>
               </CardContent>
@@ -430,10 +453,10 @@ export default function DashboardPage() {
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <Shield className="h-8 w-8 text-orange-600" />
+                  <DollarSign className="h-8 w-8 text-orange-600" />
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue}</p>
+                    <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
+                    <p className="text-2xl font-bold text-gray-900">$24,500</p>
                   </div>
                 </div>
               </CardContent>
@@ -452,8 +475,12 @@ export default function DashboardPage() {
               <CardContent>
                 <p className="text-gray-600 mb-4">Manage system users and their roles</p>
                 <div className="flex space-x-2">
-                  <Button size="sm">View All Users</Button>
-                  <Button size="sm" variant="outline">Add User</Button>
+                  <Link href="/admin/users">
+                    <Button size="sm">View All Users</Button>
+                  </Link>
+                  <Link href="/admin/users">
+                    <Button size="sm" variant="outline">Add User</Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
@@ -546,6 +573,168 @@ export default function DashboardPage() {
     )
   }
 
+  if (user.role === 'maintenance') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNavigation />
+        
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Maintenance Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {user.full_name || user.email}</p>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-8 w-8 text-red-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Urgent Requests</p>
+                    <p className="text-2xl font-bold text-gray-900">3</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <Clock className="h-8 w-8 text-orange-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">In Progress</p>
+                    <p className="text-2xl font-bold text-gray-900">8</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Completed Today</p>
+                    <p className="text-2xl font-bold text-gray-900">5</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center">
+                  <DollarSign className="h-8 w-8 text-blue-600" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">This Month</p>
+                    <p className="text-2xl font-bold text-gray-900">$3,200</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Urgent Requests</h3>
+                <p className="text-gray-600">View and respond to urgent maintenance</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <Calendar className="h-8 w-8 text-blue-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Schedule</h3>
+                <p className="text-gray-600">Manage your maintenance schedule</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-6 text-center">
+                <FileText className="h-8 w-8 text-green-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Reports</h3>
+                <p className="text-gray-600">View completed work reports</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Maintenance Requests */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Maintenance Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {[
+                  {
+                    id: '1',
+                    title: 'Leaking tap in kitchen',
+                    property: '123 Queen Street, Auckland',
+                    priority: 'high',
+                    status: 'open',
+                    created: '2 hours ago'
+                  },
+                  {
+                    id: '2',
+                    title: 'Broken window latch',
+                    property: '456 King Street, Wellington',
+                    priority: 'medium',
+                    status: 'in_progress',
+                    created: '1 day ago'
+                  },
+                  {
+                    id: '3',
+                    title: 'Heating not working',
+                    property: '789 Main Road, Christchurch',
+                    priority: 'urgent',
+                    status: 'open',
+                    created: '30 minutes ago'
+                  }
+                ].map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{request.title}</h4>
+                      <p className="text-sm text-gray-600">{request.property}</p>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Badge className={
+                          request.priority === 'urgent' ? 'bg-red-100 text-red-800' :
+                          request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }>
+                          {request.priority}
+                        </Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {request.status.replace('_', ' ')}
+                        </Badge>
+                        <span className="text-xs text-gray-500">{request.created}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm">
+                        Accept
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <BottomNavigation />
+      </div>
+    )
+  }
+
   // Default dashboard (fallback)
   return (
     <div className="min-h-screen bg-gray-50">
@@ -581,12 +770,22 @@ export default function DashboardPage() {
                   </h3>
                   <p className="text-gray-600">{user.email}</p>
                   <div className="flex items-center mt-1">
-                    <Badge className="bg-gray-100 text-gray-800">
-                      <UserIcon className="h-3 w-3 mr-1" />
+                    <Badge className={
+                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                      user.role === 'landlord' ? 'bg-orange-100 text-orange-800' :
+                      user.role === 'tenant' ? 'bg-blue-100 text-blue-800' :
+                      user.role === 'maintenance' ? 'bg-green-100 text-green-800' :
+                      'bg-gray-100 text-gray-800'
+                    }>
+                      {user.role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
+                      {user.role === 'landlord' && <Home className="h-3 w-3 mr-1" />}
+                      {user.role === 'tenant' && <Users className="h-3 w-3 mr-1" />}
+                      {user.role === 'maintenance' && <Wrench className="h-3 w-3 mr-1" />}
                       {user.role}
                     </Badge>
                     {user.is_verified && (
-                      <Badge variant="secondary" className="ml-2">
+                      <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
+                        <CheckCircle className="h-3 w-3 mr-1" />
                         Verified
                       </Badge>
                     )}
@@ -610,7 +809,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link href="/search">
                 <Button variant="outline" className="w-full justify-start">
-                  <Users className="h-4 w-4 mr-2" />
+                  <Search className="h-4 w-4 mr-2" />
                   Search Properties
                 </Button>
               </Link>
@@ -628,7 +827,7 @@ export default function DashboardPage() {
               </Link>
               <Link href="/property-appraisal">
                 <Button variant="outline" className="w-full justify-start">
-                  <Shield className="h-4 w-4 mr-2" />
+                  <FileText className="h-4 w-4 mr-2" />
                   Property Appraisal
                 </Button>
               </Link>
@@ -652,6 +851,7 @@ export default function DashboardPage() {
                 onClick={handleLogout}
                 className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
               </Button>
             </div>

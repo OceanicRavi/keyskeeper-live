@@ -64,7 +64,7 @@ export default function AdminUsersPage() {
         .from('users')
         .select('role')
         .eq('auth_id', authUser.id)
-        .single()
+        .maybeSingle()
 
       if (!profile || profile.role !== 'admin') {
         router.push('/dashboard')

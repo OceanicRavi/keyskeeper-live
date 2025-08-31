@@ -138,10 +138,23 @@ export default function PropertyListingForm() {
 
       // For demo purposes, we'll create the property without image upload
       // In production, you'd upload images to storage first
+      
+      // Get current user to set as landlord
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) throw new Error('Not authenticated')
+      
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', authUser.id)
+        .single()
+      
+      if (!userProfile) throw new Error('User profile not found')
+      
       const propertyData = {
         ...formData,
         images: imageFiles.map((_, index) => `https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800`), // Mock image URLs
-        landlord_id: 'demo-landlord-id' // Replace with actual landlord ID from auth
+        landlord_id: userProfile.id
       }
 
       const { data, error } = await supabase

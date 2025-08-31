@@ -102,6 +102,13 @@ export default function PropertyEditPage() {
       if (!params.id) return
 
       try {
+        // Check if user has access to this property
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (!authUser) {
+          router.push('/auth/login')
+          return
+        }
+
         const { data, error } = await supabase
           .from('properties')
           .select('*')
@@ -111,6 +118,18 @@ export default function PropertyEditPage() {
         if (error) throw error
 
         if (data) {
+          // Verify user owns this property or is admin
+          const { data: userProfile } = await supabase
+            .from('users')
+            .select('id, role')
+            .eq('auth_id', authUser.id)
+            .single()
+          
+          if (!userProfile || (userProfile.role !== 'admin' && userProfile.id !== data.landlord_id)) {
+            router.push('/dashboard')
+            return
+          }
+          
           setProperty(data)
           setFormData({
             title: data.title || '',

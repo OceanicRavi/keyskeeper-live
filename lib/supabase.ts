@@ -264,7 +264,7 @@ export const getUserProfile = async (authId: string): Promise<User | null> => {
     .from('users')
     .select('*')
     .eq('auth_id', authId)
-    .single()
+    .maybeSingle()
   
   if (error) return null
   return data
