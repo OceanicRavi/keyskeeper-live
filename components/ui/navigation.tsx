@@ -1,3 +1,4 @@
+// File: components/ui/navigation.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -79,44 +80,65 @@ export function TopNavigation() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    // Get initial user
-    const getUser = async () => {
+    // Get initial session and user
+    const getInitialAuth = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
+        // Check current session first
+        const { data: { session } } = await supabase.auth.getSession()
         
-        if (authUser) {
+        if (session?.user) {
+          setIsAuthenticated(true)
+          
+          // Get user profile
           const { data: profile } = await supabase
             .from('users')
             .select('*')
-            .eq('auth_id', authUser.id)
+            .eq('auth_id', session.user.id)
             .maybeSingle()
           
-          setUser(profile)
+          if (profile) {
+            setUser(profile)
+          }
+        } else {
+          setIsAuthenticated(false)
+          setUser(null)
         }
       } catch (error) {
-        console.error('Error fetching user:', error)
+        console.error('Error fetching initial auth:', error)
+        setIsAuthenticated(false)
+        setUser(null)
       } finally {
         setLoading(false)
       }
     }
 
-    getUser()
+    getInitialAuth()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id)
+      
       if (event === 'SIGNED_IN' && session?.user) {
+        setIsAuthenticated(true)
+        
+        // Get user profile
         const { data: profile } = await supabase
           .from('users')
           .select('*')
           .eq('auth_id', session.user.id)
           .maybeSingle()
         
-        setUser(profile)
+        if (profile) {
+          setUser(profile)
+        }
       } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false)
         setUser(null)
       }
+      
       setLoading(false)
     })
 
@@ -125,12 +147,16 @@ export function TopNavigation() {
 
   const handleSignOut = async () => {
     try {
+      setLoading(true)
       await supabase.auth.signOut()
       setUser(null)
+      setIsAuthenticated(false)
       setIsUserMenuOpen(false)
       router.push('/')
     } catch (error) {
       console.error('Error signing out:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -176,7 +202,7 @@ export function TopNavigation() {
           <div className="hidden md:flex items-center space-x-4">
             {loading ? (
               <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
-            ) : user ? (
+            ) : isAuthenticated && user ? (
               <div className="relative user-menu">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -294,7 +320,7 @@ export function TopNavigation() {
         {isMenuOpen && (
           <div className="md:hidden mobile-menu">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200 bg-white">
-              {user && (
+              {isAuthenticated && user && (
                 <div className="px-3 py-3 border-b border-gray-100 mb-3">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
@@ -346,7 +372,7 @@ export function TopNavigation() {
                 Free Appraisal
               </Link>
 
-              {user ? (
+              {isAuthenticated && user ? (
                 <div className="border-t border-gray-100 pt-3 mt-3">
                   <Link 
                     href={getDashboardPath(user.role)}
@@ -412,39 +438,54 @@ export function TopNavigation() {
 export function BottomNavigation() {
   const pathname = usePathname()
   const [user, setUser] = useState<UserProfile | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    const getUser = async () => {
+    const getInitialAuth = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
+        const { data: { session } } = await supabase.auth.getSession()
         
-        if (authUser) {
+        if (session?.user) {
+          setIsAuthenticated(true)
+          
           const { data: profile } = await supabase
             .from('users')
             .select('*')
-            .eq('auth_id', authUser.id)
+            .eq('auth_id', session.user.id)
             .maybeSingle()
           
-          setUser(profile)
+          if (profile) {
+            setUser(profile)
+          }
+        } else {
+          setIsAuthenticated(false)
+          setUser(null)
         }
       } catch (error) {
         console.error('Error fetching user:', error)
+        setIsAuthenticated(false)
+        setUser(null)
       }
     }
 
-    getUser()
+    getInitialAuth()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        setIsAuthenticated(true)
+        
         const { data: profile } = await supabase
           .from('users')
           .select('*')
           .eq('auth_id', session.user.id)
           .maybeSingle()
         
-        setUser(profile)
+        if (profile) {
+          setUser(profile)
+        }
       } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false)
         setUser(null)
       }
     })
@@ -466,15 +507,15 @@ export function BottomNavigation() {
       active: pathname === '/search'
     },
     {
-      href: user ? getDashboardPath(user.role) : '/dashboard',
+      href: isAuthenticated && user ? getDashboardPath(user.role) : '/dashboard',
       icon: BarChart3,
       label: 'Dashboard',
       active: pathname === '/dashboard' || pathname === '/landlord' || pathname === '/tenant'
     },
     {
-      href: user ? '/profile' : '/auth/login',
+      href: isAuthenticated && user ? '/profile' : '/auth/login',
       icon: User,
-      label: user ? 'Profile' : 'Sign In',
+      label: isAuthenticated && user ? 'Profile' : 'Sign In',
       active: pathname === '/profile' || pathname === '/auth/login' || pathname === '/auth/signup'
     }
   ]

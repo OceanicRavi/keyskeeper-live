@@ -1,3 +1,4 @@
+// File: app/auth/login/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -44,20 +45,53 @@ export default function LoginPage() {
 
         if (profileError) {
           console.error('Error fetching profile:', profileError)
-          // If profile doesn't exist, redirect to dashboard anyway
-          router.push('/dashboard')
+          // Profile fetch failed - show verification screen as they may need to verify first
+          setShowEmailVerificationError(true)
+          setLoading(false)
           return
         }
 
-        // Check if user is verified (skip verification check for now to avoid getting stuck)
-        // if (profile && !profile.is_verified) {
-        //   setShowEmailVerificationError(true)
-        //   setLoading(false)
-        //   return
-        // }
+        // If no profile exists (returns null/undefined), user likely needs to verify email
+        if (!profile) {
+          console.log('No user profile found - showing email verification screen')
+          setShowEmailVerificationError(true)
+          setLoading(false)
+          return
+        }
 
-        // Always redirect to dashboard for now
-        router.push('/dashboard')
+        // Check if user is verified
+        if (profile && !profile.is_verified) {
+          console.log('User profile found but not verified')
+          setShowEmailVerificationError(true)
+          setLoading(false)
+          return
+        }
+
+        // Redirect based on role
+        if (profile && profile.role) {
+          console.log('Redirecting user with role:', profile.role)
+          switch (profile.role) {
+            case 'landlord':
+              router.push('/landlord')
+              break
+            case 'tenant':
+              router.push('/tenant')
+              break
+            case 'admin':
+              router.push('/dashboard')
+              break
+            case 'maintenance':
+              router.push('/dashboard')
+              break
+            default:
+              router.push('/dashboard')
+              break
+          }
+        } else {
+          // Fallback if no profile or role - this shouldn't happen at this point
+          console.log('No profile or role found - redirecting to dashboard')
+          router.push('/dashboard')
+        }
       } else {
         throw new Error('Authentication failed - no user data returned')
       }
@@ -118,7 +152,7 @@ export default function LoginPage() {
                 </h2>
                 
                 <p className="text-gray-600 mb-6">
-                  Please verify your email address before signing in. We've sent a verification 
+                  Please verify your email address before signing in. We may have sent a verification 
                   link to <strong>{email}</strong>.
                 </p>
 
@@ -128,7 +162,8 @@ export default function LoginPage() {
                     <span className="text-sm font-medium text-blue-900">Check Your Email</span>
                   </div>
                   <p className="text-xs text-blue-800">
-                    Click the verification link in your email, then return here to sign in.
+                    Look for an email from Keyskeeper (may be from supabase.io domain). 
+                    Check your spam/junk folder if you don't see it in your inbox.
                   </p>
                 </div>
 
@@ -142,13 +177,42 @@ export default function LoginPage() {
                   
                   <Button 
                     variant="outline"
-                    onClick={() => {
-                      // In a real app, you'd trigger resend verification email
-                      alert('Verification email resent!')
+                    onClick={async () => {
+                      try {
+                        setLoading(true)
+                        
+                        // Try to resend verification email
+                        const { error } = await supabase.auth.resend({
+                          type: 'signup',
+                          email: email,
+                        })
+                        
+                        if (error) {
+                          console.error('Resend error:', error)
+                          
+                          // Handle different error types
+                          if (error.message.includes('rate limit') || 
+                              error.message.includes('too many requests')) {
+                            alert('Rate limit reached. Supabase allows only 4 emails per hour on the free plan. Please try again later or contact support.')
+                          } else if (error.message.includes('User not found')) {
+                            alert('User not found. Please try signing up again.')
+                          } else {
+                            alert('Error: ' + error.message + '\n\nNote: Email delivery issues are common with Supabase\'s default email service. Please contact admin@keyskeeper.co.nz for manual verification.')
+                          }
+                        } else {
+                          alert('Verification request sent!\n\nIMPORTANT:\n• Check your spam/junk folder\n• Look for emails from supabase.io domain\n• Default email service has delivery limitations\n• Contact admin@keyskeeper.co.nz if you don\'t receive it within 10 minutes')
+                        }
+                      } catch (error: any) {
+                        console.error('Unexpected error:', error)
+                        alert('Unable to send verification email due to service limitations. Please contact admin@keyskeeper.co.nz for immediate verification.')
+                      } finally {
+                        setLoading(false)
+                      }
                     }}
                     className="w-full"
+                    disabled={loading}
                   >
-                    Resend Verification Email
+                    {loading ? 'Sending...' : 'Resend Verification Email'}
                   </Button>
                 </div>
 
@@ -158,6 +222,9 @@ export default function LoginPage() {
                     <a href="mailto:admin@keyskeeper.co.nz" className="text-[#FF5A5F] hover:text-[#E8474B]">
                       admin@keyskeeper.co.nz
                     </a>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    For immediate access, we can manually verify your account.
                   </p>
                 </div>
               </CardContent>
