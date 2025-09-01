@@ -45,13 +45,12 @@ export default function LoginPage() {
 
         if (profileError) {
           console.error('Error fetching profile:', profileError)
-          // Profile fetch failed - show verification screen as they may need to verify first
           setShowEmailVerificationError(true)
           setLoading(false)
           return
         }
 
-        // If no profile exists (returns null/undefined), user likely needs to verify email
+        // If no profile exists, user likely needs to verify email
         if (!profile) {
           console.log('No user profile found - showing email verification screen')
           setShowEmailVerificationError(true)
@@ -60,38 +59,17 @@ export default function LoginPage() {
         }
 
         // Check if user is verified
-        if (profile && !profile.is_verified) {
+/*         if (profile && !profile.is_verified) {
           console.log('User profile found but not verified')
           setShowEmailVerificationError(true)
           setLoading(false)
           return
-        }
+        } */
 
-        // Redirect based on role
-        if (profile && profile.role) {
-          console.log('Redirecting user with role:', profile.role)
-          switch (profile.role) {
-            case 'landlord':
-              router.push('/landlord')
-              break
-            case 'tenant':
-              router.push('/tenant')
-              break
-            case 'admin':
-              router.push('/dashboard')
-              break
-            case 'maintenance':
-              router.push('/dashboard')
-              break
-            default:
-              router.push('/dashboard')
-              break
-          }
-        } else {
-          // Fallback if no profile or role - this shouldn't happen at this point
-          console.log('No profile or role found - redirecting to dashboard')
-          router.push('/dashboard')
-        }
+        // Always redirect to /dashboard - let the dashboard handle role-specific content
+        console.log('Redirecting user with role:', profile.role, 'to dashboard')
+        router.push('/dashboard')
+
       } else {
         throw new Error('Authentication failed - no user data returned')
       }
@@ -114,21 +92,21 @@ export default function LoginPage() {
   if (showEmailVerificationError) {
     return (
       <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
-        <div 
+        <div
           className="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-20"
           style={{
             backgroundImage: 'url("/nz-map.png")',
             backgroundPosition: 'center right'
           }}
         />
-        
+
         <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
             <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6">
               <ArrowLeft className="h-4 w-4 mr-1" />
               Back to home
             </Link>
-            
+
             <div className="text-center">
               <Image
                 src="/keyskeeper.png"
@@ -146,13 +124,13 @@ export default function LoginPage() {
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <AlertTriangle className="h-8 w-8 text-orange-600" />
                 </div>
-                
+
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">
                   Email Verification Required
                 </h2>
-                
+
                 <p className="text-gray-600 mb-6">
-                  Please verify your email address before signing in. We may have sent a verification 
+                  Please verify your email address before signing in. We may have sent a verification
                   link to <strong>{email}</strong>.
                 </p>
 
@@ -162,37 +140,37 @@ export default function LoginPage() {
                     <span className="text-sm font-medium text-blue-900">Check Your Email</span>
                   </div>
                   <p className="text-xs text-blue-800">
-                    Look for an email from Keyskeeper (may be from supabase.io domain). 
+                    Look for an email from Keyskeeper (may be from supabase.io domain).
                     Check your spam/junk folder if you don't see it in your inbox.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <Button 
+                  <Button
                     onClick={() => setShowEmailVerificationError(false)}
                     className="w-full bg-[#FF5A5F] hover:bg-[#E8474B]"
                   >
                     Try Signing In Again
                   </Button>
-                  
-                  <Button 
+
+                  <Button
                     variant="outline"
                     onClick={async () => {
                       try {
                         setLoading(true)
-                        
+
                         // Try to resend verification email
                         const { error } = await supabase.auth.resend({
                           type: 'signup',
                           email: email,
                         })
-                        
+
                         if (error) {
                           console.error('Resend error:', error)
-                          
+
                           // Handle different error types
-                          if (error.message.includes('rate limit') || 
-                              error.message.includes('too many requests')) {
+                          if (error.message.includes('rate limit') ||
+                            error.message.includes('too many requests')) {
                             alert('Rate limit reached. Supabase allows only 4 emails per hour on the free plan. Please try again later or contact support.')
                           } else if (error.message.includes('User not found')) {
                             alert('User not found. Please try signing up again.')
@@ -238,14 +216,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex relative overflow-hidden">
       {/* New Zealand Map Background - Right Side */}
-      <div 
+      <div
         className="absolute right-0 top-0 w-1/2 h-full bg-cover bg-center bg-no-repeat opacity-20"
         style={{
           backgroundImage: 'url("/nz-map.png")',
           backgroundPosition: 'center right'
         }}
       />
-      
+
       {/* Login Form - Left Side */}
       <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative z-10">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -253,7 +231,7 @@ export default function LoginPage() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to home
           </Link>
-          
+
           <div className="text-center">
             <Image
               src="/keyskeeper.png"
@@ -276,7 +254,7 @@ export default function LoginPage() {
             <CardHeader>
               <CardTitle className="text-center text-xl">Sign In</CardTitle>
             </CardHeader>
-            
+
             <CardContent>
               {error && (
                 <Alert className="mb-6 border-red-200 bg-red-50">
@@ -338,8 +316,8 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] text-white py-3"
                   disabled={loading}
                 >

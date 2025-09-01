@@ -5,13 +5,13 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  Menu, 
-  X, 
-  Home, 
-  Search, 
-  User, 
-  Settings, 
+import {
+  Menu,
+  X,
+  Home,
+  Search,
+  User,
+  Settings,
   LogOut,
   ChevronDown,
   Shield,
@@ -31,9 +31,9 @@ const getDashboardPath = (role: UserRole): string => {
     case 'admin':
       return '/dashboard'
     case 'landlord':
-      return '/landlord'
+      return '/dashboard'
     case 'tenant':
-      return '/tenant'
+      return '/dashboard'
     case 'maintenance':
       return '/dashboard'
     default:
@@ -88,17 +88,17 @@ export function TopNavigation() {
       try {
         // Check current session first
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         if (session?.user) {
           setIsAuthenticated(true)
-          
+
           // Get user profile
           const { data: profile } = await supabase
             .from('users')
             .select('*')
             .eq('auth_id', session.user.id)
             .maybeSingle()
-          
+
           if (profile) {
             setUser(profile)
           }
@@ -120,17 +120,17 @@ export function TopNavigation() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.id)
-      
+
       if (event === 'SIGNED_IN' && session?.user) {
         setIsAuthenticated(true)
-        
+
         // Get user profile
         const { data: profile } = await supabase
           .from('users')
           .select('*')
           .eq('auth_id', session.user.id)
           .maybeSingle()
-        
+
         if (profile) {
           setUser(profile)
         }
@@ -138,7 +138,7 @@ export function TopNavigation() {
         setIsAuthenticated(false)
         setUser(null)
       }
-      
+
       setLoading(false)
     })
 
@@ -234,9 +234,9 @@ export function TopNavigation() {
                         </Badge>
                       </div>
                     </div>
-                    
+
                     <div className="py-2">
-                      <Link 
+                      <Link
                         href={getDashboardPath(user.role)}
                         onClick={closeMenus}
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -244,9 +244,9 @@ export function TopNavigation() {
                         <BarChart3 className="h-4 w-4 mr-3" />
                         Dashboard
                       </Link>
-                      
+
                       {user.role === 'landlord' && (
-                        <Link 
+                        <Link
                           href="/list-property"
                           onClick={closeMenus}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -255,9 +255,9 @@ export function TopNavigation() {
                           List Property
                         </Link>
                       )}
-                      
+
                       {user.role === 'admin' && (
-                        <Link 
+                        <Link
                           href="/admin/users"
                           onClick={closeMenus}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -266,8 +266,8 @@ export function TopNavigation() {
                           Manage Users
                         </Link>
                       )}
-                      
-                      <Link 
+
+                      <Link
                         href="/search"
                         onClick={closeMenus}
                         className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -275,7 +275,7 @@ export function TopNavigation() {
                         <Search className="h-4 w-4 mr-3" />
                         Browse Properties
                       </Link>
-                      
+
                       <div className="border-t border-gray-100 mt-2 pt-2">
                         <button
                           onClick={handleSignOut}
@@ -340,31 +340,33 @@ export function TopNavigation() {
                 </div>
               )}
 
-              <Link 
+              <Link
                 href="/search"
                 onClick={closeMenus}
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
               >
                 Browse Properties
               </Link>
-              
-              <Link 
+
+              {/* Fixed: Change /landlord to /landlord (marketing page) */}
+              <Link
                 href="/landlord"
                 onClick={closeMenus}
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
               >
                 For Landlords
               </Link>
-              
-              <Link 
+
+              {/* Fixed: Change /tenant to /tenant (marketing page) */}
+              <Link
                 href="/tenant"
                 onClick={closeMenus}
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
               >
                 For Tenants
               </Link>
-              
-              <Link 
+
+              <Link
                 href="/property-appraisal"
                 onClick={closeMenus}
                 className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
@@ -374,7 +376,7 @@ export function TopNavigation() {
 
               {isAuthenticated && user ? (
                 <div className="border-t border-gray-100 pt-3 mt-3">
-                  <Link 
+                  <Link
                     href={getDashboardPath(user.role)}
                     onClick={closeMenus}
                     className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
@@ -382,9 +384,9 @@ export function TopNavigation() {
                     <BarChart3 className="h-5 w-5 mr-3" />
                     Dashboard
                   </Link>
-                  
+
                   {user.role === 'landlord' && (
-                    <Link 
+                    <Link
                       href="/list-property"
                       onClick={closeMenus}
                       className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
@@ -393,9 +395,9 @@ export function TopNavigation() {
                       List Property
                     </Link>
                   )}
-                  
+
                   {user.role === 'admin' && (
-                    <Link 
+                    <Link
                       href="/admin/users"
                       onClick={closeMenus}
                       className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
@@ -404,7 +406,7 @@ export function TopNavigation() {
                       Manage Users
                     </Link>
                   )}
-                  
+
                   <button
                     onClick={handleSignOut}
                     className="flex items-center w-full px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
@@ -444,16 +446,16 @@ export function BottomNavigation() {
     const getInitialAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
-        
+
         if (session?.user) {
           setIsAuthenticated(true)
-          
+
           const { data: profile } = await supabase
             .from('users')
             .select('*')
             .eq('auth_id', session.user.id)
             .maybeSingle()
-          
+
           if (profile) {
             setUser(profile)
           }
@@ -474,13 +476,13 @@ export function BottomNavigation() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         setIsAuthenticated(true)
-        
+
         const { data: profile } = await supabase
           .from('users')
           .select('*')
           .eq('auth_id', session.user.id)
           .maybeSingle()
-        
+
         if (profile) {
           setUser(profile)
         }
@@ -529,11 +531,10 @@ export function BottomNavigation() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center space-y-1 transition-colors ${
-                item.active
+              className={`flex flex-col items-center justify-center space-y-1 transition-colors ${item.active
                   ? 'text-[#FF5A5F] bg-red-50'
                   : 'text-gray-600 hover:text-[#FF5A5F] hover:bg-gray-50'
-              }`}
+                }`}
             >
               <Icon className="h-5 w-5" />
               <span className="text-xs font-medium">{item.label}</span>

@@ -7,11 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
-import { 
-  Home, 
-  Users, 
-  Wrench, 
-  Shield, 
+import {
+  Home,
+  Users,
+  Wrench,
+  Shield,
   ArrowRight,
   User as UserIcon,
   Settings,
@@ -53,7 +53,7 @@ export default function DashboardPage() {
     const checkUser = async () => {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser()
-        
+
         if (!authUser) {
           router.push('/auth/login')
           return
@@ -67,6 +67,19 @@ export default function DashboardPage() {
 
         if (profile) {
           setUser(profile)
+
+          // Optional: Redirect to role-specific pages if you want separate dashboards
+          // Comment out this section if you want all users to stay on /dashboard
+          /*
+          if (profile.role === 'landlord' && pathname === '/dashboard') {
+            router.push('/landlord')
+            return
+          } else if (profile.role === 'tenant' && pathname === '/dashboard') {
+            router.push('/tenant') 
+            return
+          }
+          */
+
           await fetchDashboardData(profile)
         } else {
           router.push('/auth/login')
@@ -91,7 +104,7 @@ export default function DashboardPage() {
           .select('*')
           .eq('landlord_id', user.id)
           .order('created_at', { ascending: false })
-        
+
         setProperties(userProperties || [])
         setStats(prev => ({ ...prev, totalProperties: userProperties?.length || 0 }))
       } else if (user.role === 'admin') {
@@ -102,14 +115,14 @@ export default function DashboardPage() {
           supabase.from('maintenance_requests').select('*').order('created_at', { ascending: false }),
           supabase.from('payments').select('*').eq('status', 'paid').gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
         ])
-        
+
         setProperties(propertiesRes.data || [])
         setMaintenanceRequests(maintenanceRes.data || [])
         setPayments(paymentsRes.data || [])
-        
+
         // Calculate real stats
         const totalRevenue = (paymentsRes.data || []).reduce((sum, payment) => sum + payment.amount, 0)
-        
+
         setStats({
           totalProperties: propertiesRes.data?.length || 0,
           totalUsers: usersRes.data?.length || 0,
@@ -124,7 +137,7 @@ export default function DashboardPage() {
           .eq('is_available', true)
           .order('created_at', { ascending: false })
           .limit(6)
-        
+
         setProperties(availableProperties || [])
       } else if (user.role === 'maintenance') {
         // Fetch maintenance requests assigned to this user
@@ -134,7 +147,7 @@ export default function DashboardPage() {
           .or('assigned_to.eq.' + user.id + ',assigned_to.is.null')
           .order('created_at', { ascending: false })
           .limit(10)
-        
+
         setMaintenanceRequests(userMaintenanceRequests || [])
         setProperties([])
         setStats({
@@ -161,20 +174,20 @@ export default function DashboardPage() {
 
   const handleDeleteProperty = async () => {
     if (!propertyToDelete) return
-    
+
     try {
       const { error } = await supabase
         .from('properties')
         .delete()
         .eq('id', propertyToDelete)
-      
+
       if (error) throw error
-      
+
       // Refresh properties
       if (user) {
         await fetchDashboardData(user)
       }
-      
+
       setDeleteDialogOpen(false)
       setPropertyToDelete(null)
     } catch (error) {
@@ -188,14 +201,14 @@ export default function DashboardPage() {
     try {
       const { error } = await supabase
         .from('maintenance_requests')
-        .update({ 
+        .update({
           assigned_to: user?.id,
           status: 'in_progress'
         })
         .eq('id', requestId)
 
       if (error) throw error
-      
+
       // Refresh data
       if (user) {
         await fetchDashboardData(user)
@@ -223,13 +236,13 @@ export default function DashboardPage() {
   // Error display component
   const ErrorDisplay = () => {
     if (!error) return null
-    
+
     return (
       <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
         <p>{error}</p>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setError('')}
           className="mt-2 text-red-600 hover:text-red-800"
         >
@@ -244,10 +257,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <TopNavigation />
-        
+
         <div className="max-w-7xl mx-auto px-4 py-8">
           <ErrorDisplay />
-          
+
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Landlord Dashboard</h1>
@@ -316,8 +329,8 @@ export default function DashboardPage() {
                             <div className="flex items-center">
                               <div className="w-12 h-12 bg-gray-200 rounded-lg mr-3">
                                 {property.images?.[0] && (
-                                  <img 
-                                    src={property.images[0]} 
+                                  <img
+                                    src={property.images[0]}
                                     alt={property.title}
                                     className="w-full h-full object-cover rounded-lg"
                                   />
@@ -352,8 +365,8 @@ export default function DashboardPage() {
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </Link>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={() => openDeleteDialog(property.id)}
                                 className="text-red-600 hover:text-red-700"
@@ -386,7 +399,7 @@ export default function DashboardPage() {
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleDeleteProperty}
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
@@ -406,10 +419,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <TopNavigation />
-        
+
         <div className="max-w-7xl mx-auto px-4 py-8">
           <ErrorDisplay />
-          
+
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Tenant Dashboard</h1>
@@ -434,7 +447,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </Link>
-            
+
             <Link href="/maintenance-request">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6 text-center">
@@ -466,8 +479,8 @@ export default function DashboardPage() {
                     <CardContent className="p-4">
                       <div className="aspect-video bg-gray-200 rounded-lg mb-4">
                         {property.images?.[0] && (
-                          <img 
-                            src={property.images[0]} 
+                          <img
+                            src={property.images[0]}
                             alt={property.title}
                             className="w-full h-full object-cover rounded-lg"
                           />
@@ -498,10 +511,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <TopNavigation />
-        
+
         <div className="max-w-7xl mx-auto px-4 py-8">
           <ErrorDisplay />
-          
+
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -522,7 +535,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -534,7 +547,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -546,7 +559,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -581,7 +594,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -654,8 +667,8 @@ export default function DashboardPage() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </Link>
-                            <Button 
-                              variant="ghost" 
+                            <Button
+                              variant="ghost"
                               size="sm"
                               onClick={() => openDeleteDialog(property.id)}
                               className="text-red-600 hover:text-red-700"
@@ -688,7 +701,7 @@ export default function DashboardPage() {
                 <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleDeleteProperty}
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
@@ -708,10 +721,10 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <TopNavigation />
-        
+
         <div className="max-w-7xl mx-auto px-4 py-8">
           <ErrorDisplay />
-          
+
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Maintenance Dashboard</h1>
@@ -734,7 +747,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -748,7 +761,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -756,8 +769,8 @@ export default function DashboardPage() {
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Completed Today</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {maintenanceRequests.filter(req => 
-                        req.status === 'completed' && 
+                      {maintenanceRequests.filter(req =>
+                        req.status === 'completed' &&
                         new Date(req.completed_date || '').toDateString() === new Date().toDateString()
                       ).length}
                     </p>
@@ -765,7 +778,7 @@ export default function DashboardPage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -795,7 +808,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </Link>
-            
+
             <Link href="/maintenance/schedule">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6 text-center">
@@ -838,9 +851,9 @@ export default function DashboardPage() {
                         <div className="flex items-center space-x-2 mt-2">
                           <Badge className={
                             request.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                            request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                            request.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
+                              request.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                                request.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-green-100 text-green-800'
                           }>
                             {request.priority}
                           </Badge>
@@ -858,8 +871,8 @@ export default function DashboardPage() {
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           title="Accept request"
                           onClick={() => handleAcceptRequest(request.id)}
                           className="bg-green-600 hover:bg-green-700 text-white"
@@ -884,10 +897,10 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavigation />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <ErrorDisplay />
-        
+
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome to Keyskeeper
@@ -919,10 +932,10 @@ export default function DashboardPage() {
                   <div className="flex items-center mt-1">
                     <Badge className={
                       user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'landlord' ? 'bg-orange-100 text-orange-800' :
-                      user.role === 'tenant' ? 'bg-blue-100 text-blue-800' :
-                      user.role === 'maintenance' ? 'bg-green-100 text-green-800' :
-                      'bg-gray-100 text-gray-800'
+                        user.role === 'landlord' ? 'bg-orange-100 text-orange-800' :
+                          user.role === 'tenant' ? 'bg-blue-100 text-blue-800' :
+                            user.role === 'maintenance' ? 'bg-green-100 text-green-800' :
+                              'bg-gray-100 text-gray-800'
                     }>
                       {user.role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
                       {user.role === 'landlord' && <Home className="h-3 w-3 mr-1" />}
@@ -993,8 +1006,8 @@ export default function DashboardPage() {
                 <Settings className="h-4 w-4 mr-2" />
                 Account Settings
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleLogout}
                 className="flex-1 text-red-600 border-red-200 hover:bg-red-50"
               >

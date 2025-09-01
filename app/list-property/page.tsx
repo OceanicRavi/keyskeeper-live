@@ -1,4 +1,3 @@
-// app/list-property/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -11,10 +10,10 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Progress } from '@/components/ui/progress'
 import { TopNavigation } from '@/components/ui/navigation'
-import AddressAutocomplete, { AddressData } from '@/components/ui/address-autocomplete'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Upload, X, MapPin, Home, DollarSign } from 'lucide-react'
+import { ArrowLeft, Upload, X, MapPin, Home, DollarSign, AlertCircle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
 interface PropertyFormData {
@@ -39,7 +38,6 @@ interface PropertyFormData {
   smoking_allowed: boolean
   available_from: string
   amenities: string[]
-  images: string[]
 }
 
 const amenityOptions = [
@@ -68,25 +66,44 @@ export default function PropertyListingForm() {
     pets_allowed: false,
     smoking_allowed: false,
     available_from: new Date().toISOString().split('T')[0],
-    amenities: [],
-    images: []
+    amenities: []
   })
   
   const [loading, setLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState('')
   const [step, setStep] = useState(1)
   const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
+  const [isUploading, setIsUploading] = useState(false)
 
-  const handleAddressSelect = (addressData: AddressData) => {
-    setFormData({
-      ...formData,
-      address: addressData.address,
-      suburb: addressData.suburb,
-      city: addressData.city,
-      postcode: addressData.postcode,
-      latitude: addressData.latitude,
-      longitude: addressData.longitude
-    })
+  // Step validation function
+  const validateStep = (stepNumber: number): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = []
+    
+    switch (stepNumber) {
+      case 1: // Property Details
+        if (!formData.title.trim()) errors.push('Property title is required')
+        if (!formData.address.trim()) errors.push('Property address is required')
+        if (!formData.suburb.trim()) errors.push('Suburb is required')
+        if (!formData.city.trim()) errors.push('City is required')
+        break
+        
+      case 2: // Features & Pricing
+        if (!formData.price_per_week || formData.price_per_week <= 0) {
+          errors.push('Weekly rent must be greater than $0')
+        }
+        if (!formData.available_from) errors.push('Available from date is required')
+        break
+        
+      case 3: // Photos & Review - no required fields
+        break
+        
+      default:
+        break
+    }
+    
+    return { isValid: errors.length === 0, errors }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -110,52 +127,191 @@ export default function PropertyListingForm() {
     setFormData({ ...formData, amenities: updatedAmenities })
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Image upload with validation
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length + imageFiles.length > 10) {
       setError('Maximum 10 images allowed')
       return
     }
     
-    setImageFiles([...imageFiles, ...files])
-    setError('')
+    // Validate file types and sizes
+    const validFiles = files.filter(file => {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      
+      if (!validTypes.includes(file.type)) {
+        setError(`${file.name} is not a supported image format. Please use JPG, PNG, or WebP.`)
+        return false
+      }
+      
+      if (file.size > maxSize) {
+        setError(`${file.name} is too large. Maximum file size is 5MB.`)
+        return false
+      }
+      
+      return true
+    })
+    
+    if (validFiles.length > 0) {
+      setImageFiles([...imageFiles, ...validFiles])
+      setError('') // Clear any previous errors
+    }
   }
 
   const removeImage = (index: number) => {
-    setImageFiles(imageFiles.filter((_, i) => i !== index))
+    const newImageFiles = imageFiles.filter((_, i) => i !== index)
+    setImageFiles(newImageFiles)
+    
+    // Also remove from uploaded URLs if it was already uploaded
+    if (uploadedImageUrls[index]) {
+      const newUploadedUrls = uploadedImageUrls.filter((_, i) => i !== index)
+      setUploadedImageUrls(newUploadedUrls)
+    }
+  }
+
+  // Upload images to Supabase Storage
+  const uploadImagesToStorage = async (files: File[]): Promise<string[]> => {
+    if (files.length === 0) return []
+    
+    setIsUploading(true)
+    setUploadProgress(0)
+    const uploadedUrls: string[] = []
+    
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `property-images/${fileName}`
+        
+        console.log(`Uploading ${file.name} to ${filePath}`)
+        
+        const { data, error } = await supabase.storage
+          .from('property-images')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          })
+        
+        if (error) {
+          console.error('Upload error:', error)
+          throw new Error(`Failed to upload ${file.name}: ${error.message}`)
+        }
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-images')
+          .getPublicUrl(filePath)
+        
+        uploadedUrls.push(publicUrl)
+        console.log(`Uploaded ${file.name}, URL: ${publicUrl}`)
+        
+        // Update progress
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100))
+      }
+      
+      return uploadedUrls
+    } catch (error) {
+      console.error('Image upload failed:', error)
+      throw error
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const nextStep = () => {
+    const validation = validateStep(step)
+    
+    if (!validation.isValid) {
+      setError(validation.errors.join(', '))
+      return
+    }
+    
+    setError('')
+    setStep(step + 1)
+  }
+  
+  const prevStep = () => {
+    setError('')
+    setStep(step - 1)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate all steps before submission
+    const step1Validation = validateStep(1)
+    const step2Validation = validateStep(2)
+    
+    const allErrors = [...step1Validation.errors, ...step2Validation.errors]
+    
+    if (allErrors.length > 0) {
+      setError('Please fix the following issues: ' + allErrors.join(', '))
+      return
+    }
+    
     setLoading(true)
     setError('')
 
     try {
-      // Validate required fields
-      if (!formData.title || !formData.address || !formData.price_per_week) {
-        throw new Error('Please fill in all required fields')
-      }
-
-      // For demo purposes, we'll create the property without image upload
-      // In production, you'd upload images to storage first
-      
-      // Get current user to set as landlord
+      // Get current user
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) throw new Error('Not authenticated')
       
-      const { data: userProfile } = await supabase
+      const { data: userProfile, error: profileError } = await supabase
         .from('users')
         .select('id')
         .eq('auth_id', authUser.id)
         .single()
       
-      if (!userProfile) throw new Error('User profile not found')
-      
-      const propertyData = {
-        ...formData,
-        images: imageFiles.map((_, index) => `https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800`), // Mock image URLs
-        landlord_id: userProfile.id
+      if (profileError || !userProfile) {
+        throw new Error('User profile not found')
       }
+      
+      // Upload images first if any are selected
+      let imageUrls: string[] = []
+      if (imageFiles.length > 0) {
+        try {
+          imageUrls = await uploadImagesToStorage(imageFiles)
+        } catch (uploadError: any) {
+          throw new Error(`Image upload failed: ${uploadError.message}`)
+        }
+      }
+      
+      // If no images uploaded, use a default placeholder
+      if (imageUrls.length === 0) {
+        imageUrls = ['https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800']
+      }
+      
+      // Create property data
+      const propertyData = {
+        title: formData.title,
+        description: formData.description || null,
+        address: formData.address,
+        suburb: formData.suburb,
+        city: formData.city,
+        postcode: formData.postcode || null,
+        property_type: formData.property_type,
+        bedrooms: formData.bedrooms,
+        bathrooms: formData.bathrooms,
+        parking_spaces: formData.parking_spaces,
+        price_per_week: formData.price_per_week,
+        bond_amount: formData.bond_amount,
+        utilities_included: formData.utilities_included,
+        internet_included: formData.internet_included,
+        is_furnished: formData.is_furnished,
+        pets_allowed: formData.pets_allowed,
+        smoking_allowed: formData.smoking_allowed,
+        available_from: formData.available_from,
+        amenities: formData.amenities,
+        images: imageUrls, // Real uploaded image URLs
+        landlord_id: userProfile.id,
+        is_available: true,
+        compliance_status: 'pending'
+      }
+
+      console.log('Creating property with data:', propertyData)
 
       const { data, error } = await supabase
         .from('properties')
@@ -163,18 +319,24 @@ export default function PropertyListingForm() {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Property creation error:', error)
+        throw error
+      }
 
+      console.log('Property created successfully:', data)
+      
+      // Success! Redirect to the property page
       router.push(`/properties/${data.id}?success=listed`)
+      
     } catch (error: any) {
+      console.error('Error creating property:', error)
       setError(error.message || 'Failed to create property listing')
     } finally {
       setLoading(false)
+      setUploadProgress(0)
     }
   }
-
-  const nextStep = () => setStep(step + 1)
-  const prevStep = () => setStep(step - 1)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,9 +344,9 @@ export default function PropertyListingForm() {
       
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <Link href="/landlord" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
+          <Link href="/dashboard" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Landlord Dashboard
+            Back to Dashboard
           </Link>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">List Your Property</h1>
@@ -218,8 +380,25 @@ export default function PropertyListingForm() {
 
         {error && (
           <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
             <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
+        )}
+
+        {/* Upload Progress */}
+        {isUploading && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <Upload className="h-5 w-5 text-blue-600" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-900">Uploading images...</p>
+                  <Progress value={uploadProgress} className="mt-2" />
+                  <p className="text-xs text-blue-700 mt-1">{uploadProgress}% complete</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <form onSubmit={handleSubmit}>
@@ -243,9 +422,11 @@ export default function PropertyListingForm() {
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="e.g., Modern 2BR Apartment in Auckland Central"
-                    required
-                    className="mt-1"
+                    className={`mt-1 ${!formData.title.trim() ? 'border-red-300' : ''}`}
                   />
+                  {!formData.title.trim() && (
+                    <p className="text-red-500 text-xs mt-1">Property title is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -267,36 +448,38 @@ export default function PropertyListingForm() {
                   <Label className="text-sm font-medium text-gray-700 mb-2 block">
                     Property Address *
                   </Label>
-                  <AddressAutocomplete
-                    onAddressSelect={handleAddressSelect}
-                    placeholder="Start typing the property address..."
-                    initialValue={formData.address}
+                  <Input
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="123 Queen Street"
+                    className={`${!formData.address.trim() ? 'border-red-300' : ''}`}
                   />
-                  {formData.latitude && formData.longitude && (
-                    <div className="mt-2 flex items-center text-sm text-green-600">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      Location verified
-                    </div>
+                  {!formData.address.trim() && (
+                    <p className="text-red-500 text-xs mt-1">Property address is required</p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="suburb" className="text-sm font-medium text-gray-700">
-                      Suburb
+                      Suburb *
                     </Label>
                     <Input
                       id="suburb"
                       name="suburb"
                       value={formData.suburb}
                       onChange={handleInputChange}
-                      placeholder="Suburb"
-                      className="mt-1"
+                      placeholder="Auckland Central"
+                      className={`mt-1 ${!formData.suburb.trim() ? 'border-red-300' : ''}`}
                     />
+                    {!formData.suburb.trim() && (
+                      <p className="text-red-500 text-xs mt-1">Suburb is required</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                      City
+                      City *
                     </Label>
                     <select
                       id="city"
@@ -421,13 +604,15 @@ export default function PropertyListingForm() {
                       id="price_per_week"
                       name="price_per_week"
                       type="number"
-                      min="0"
+                      min="1"
                       value={formData.price_per_week}
                       onChange={handleInputChange}
                       placeholder="500"
-                      required
-                      className="mt-1"
+                      className={`mt-1 ${formData.price_per_week <= 0 ? 'border-red-300' : ''}`}
                     />
+                    {formData.price_per_week <= 0 && (
+                      <p className="text-red-500 text-xs mt-1">Weekly rent must be greater than $0</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="bond_amount" className="text-sm font-medium text-gray-700">
@@ -448,7 +633,7 @@ export default function PropertyListingForm() {
 
                 <div>
                   <Label htmlFor="available_from" className="text-sm font-medium text-gray-700">
-                    Available From
+                    Available From *
                   </Label>
                   <Input
                     id="available_from"
@@ -456,8 +641,11 @@ export default function PropertyListingForm() {
                     type="date"
                     value={formData.available_from}
                     onChange={handleInputChange}
-                    className="mt-1"
+                    className={`mt-1 ${!formData.available_from ? 'border-red-300' : ''}`}
                   />
+                  {!formData.available_from && (
+                    <p className="text-red-500 text-xs mt-1">Available from date is required</p>
+                  )}
                 </div>
 
                 <div>
@@ -570,7 +758,7 @@ export default function PropertyListingForm() {
                   <Label className="text-sm font-medium text-gray-700 mb-3 block">
                     Property Photos (Max 10)
                   </Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 transition-colors">
                     <div className="text-center">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <div className="text-sm text-gray-600 mb-4">
@@ -584,49 +772,85 @@ export default function PropertyListingForm() {
                           id="image-upload"
                           type="file"
                           multiple
-                          accept="image/*"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
                           onChange={handleImageUpload}
                           className="hidden"
+                          disabled={isUploading}
                         />
                       </div>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each</p>
+                      <p className="text-xs text-gray-500">
+                        JPG, PNG, WebP up to 5MB each • Max {10 - imageFiles.length} more images
+                      </p>
+                      {imageFiles.length > 0 && (
+                        <div className="mt-2">
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            {imageFiles.length} image{imageFiles.length !== 1 ? 's' : ''} selected
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                   </div>
 
+                  {/* Selected Images Preview */}
                   {imageFiles.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                      {imageFiles.map((file, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt={`Upload ${index + 1}`}
-                            className="w-full h-24 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full"
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                        Selected Images ({imageFiles.length})
+                      </Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                        {imageFiles.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={`Upload ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-lg border"
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg flex items-center justify-center">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeImage(index)}
+                                className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                disabled={isUploading}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                              {file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}
+                            </div>
+                            <div className="absolute top-1 left-1">
+                              <Badge variant="secondary" className="text-xs bg-white bg-opacity-90">
+                                {index + 1}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Image upload tips */}
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>📸 Photo tips:</strong> Upload high-quality images showing different angles, rooms, and features. 
+                          The first image will be your main listing photo.
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
 
+                {/* Property Review Summary */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-3">Review Your Listing</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Property:</span>
-                      <span className="font-medium">{formData.title}</span>
+                      <span className="font-medium">{formData.title || 'Not set'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Address:</span>
-                      <span className="font-medium">{formData.address}, {formData.suburb}</span>
+                      <span className="font-medium">{formData.address || 'Not set'}, {formData.suburb || 'Not set'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
@@ -638,11 +862,17 @@ export default function PropertyListingForm() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Weekly Rent:</span>
-                      <span className="font-medium text-[#FF5A5F]">${formData.price_per_week}</span>
+                      <span className="font-medium text-[#FF5A5F]">${formData.price_per_week || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Available From:</span>
-                      <span className="font-medium">{new Date(formData.available_from).toLocaleDateString('en-NZ')}</span>
+                      <span className="font-medium">
+                        {formData.available_from ? new Date(formData.available_from).toLocaleDateString('en-NZ') : 'Not set'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Images:</span>
+                      <span className="font-medium">{imageFiles.length || 0} uploaded</span>
                     </div>
                     {formData.amenities.length > 0 && (
                       <div className="pt-2">
@@ -659,16 +889,40 @@ export default function PropertyListingForm() {
                   </div>
                 </div>
 
+                {/* Supabase Storage Setup Notice */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+                    <div>
+                      <h5 className="font-medium text-amber-900 mb-1">Image Upload Setup</h5>
+                      <p className="text-sm text-amber-800">
+                        Make sure you have created a <strong>"property-images"</strong> storage bucket in your Supabase project 
+                        with public access enabled. Images will be uploaded to Supabase Storage and their URLs saved to the database.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex justify-between">
-                  <Button type="button" variant="outline" onClick={prevStep}>
+                  <Button type="button" variant="outline" onClick={prevStep} disabled={loading || isUploading}>
                     Back
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={loading}
-                    className="bg-[#FF5A5F] hover:bg-[#E8474B]"
+                    disabled={loading || isUploading}
+                    className="bg-[#FF5A5F] hover:bg-[#E8474B] disabled:opacity-50"
                   >
-                    {loading ? 'Creating Listing...' : 'Publish Listing'}
+                    {loading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        {isUploading ? 'Uploading Images...' : 'Creating Listing...'}
+                      </div>
+                    ) : (
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Publish Listing
+                      </div>
+                    )}
                   </Button>
                 </div>
               </CardContent>

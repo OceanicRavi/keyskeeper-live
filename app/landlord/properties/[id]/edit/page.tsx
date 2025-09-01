@@ -12,14 +12,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { TopNavigation } from '@/components/ui/navigation'
-import AddressAutocomplete, { AddressData } from '@/components/ui/address-autocomplete'
+//import AddressAutocomplete, { AddressData } from '@/components/ui/address-autocomplete'
 import { supabase, Property } from '@/lib/supabase'
-import { 
-  ArrowLeft, 
-  Upload, 
-  X, 
-  MapPin, 
-  Home, 
+import {
+  ArrowLeft,
+  Upload,
+  X,
+  MapPin,
+  Home,
   DollarSign,
   Save,
   Eye,
@@ -56,7 +56,7 @@ interface PropertyFormData {
 }
 
 const amenityOptions = [
-  'WiFi', 'Parking', 'Garden', 'Balcony', 'Gym', 'Pool', 'Laundry', 
+  'WiFi', 'Parking', 'Garden', 'Balcony', 'Gym', 'Pool', 'Laundry',
   'Dishwasher', 'Air Conditioning', 'Heating', 'Security', 'Storage'
 ]
 
@@ -89,7 +89,7 @@ export default function PropertyEditPage() {
     amenities: [],
     images: []
   })
-  
+
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -124,12 +124,12 @@ export default function PropertyEditPage() {
             .select('id, role')
             .eq('auth_id', authUser.id)
             .single()
-          
+
           if (!userProfile || (userProfile.role !== 'admin' && userProfile.id !== data.landlord_id)) {
             router.push('/dashboard')
             return
           }
-          
+
           setProperty(data)
           setFormData({
             title: data.title || '',
@@ -168,21 +168,9 @@ export default function PropertyEditPage() {
     fetchProperty()
   }, [params.id])
 
-  const handleAddressSelect = (addressData: AddressData) => {
-    setFormData({
-      ...formData,
-      address: addressData.address,
-      suburb: addressData.suburb,
-      city: addressData.city,
-      postcode: addressData.postcode,
-      latitude: addressData.latitude,
-      longitude: addressData.longitude
-    })
-  }
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked
       setFormData({ ...formData, [name]: checked })
@@ -197,7 +185,7 @@ export default function PropertyEditPage() {
     const updatedAmenities = formData.amenities.includes(amenity)
       ? formData.amenities.filter(a => a !== amenity)
       : [...formData.amenities, amenity]
-    
+
     setFormData({ ...formData, amenities: updatedAmenities })
   }
 
@@ -207,7 +195,7 @@ export default function PropertyEditPage() {
       setError('Maximum 10 images allowed')
       return
     }
-    
+
     setImageFiles([...imageFiles, ...files])
     setError('')
   }
@@ -241,7 +229,7 @@ export default function PropertyEditPage() {
       const updatedData = {
         ...formData,
         images: [
-          ...formData.images, 
+          ...formData.images,
           ...imageFiles.map((_, index) => `https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800`) // Mock URLs
         ]
       }
@@ -256,14 +244,14 @@ export default function PropertyEditPage() {
       setSuccess('Property updated successfully!')
       setImageFiles([])
       setImagesToDelete([])
-      
+
       // Refresh property data
       const { data: refreshedProperty } = await supabase
         .from('properties')
         .select('*')
         .eq('id', params.id)
         .single()
-      
+
       if (refreshedProperty) {
         setProperty(refreshedProperty)
       }
@@ -336,14 +324,14 @@ export default function PropertyEditPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopNavigation />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="mb-8">
           <Link href="/landlord" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Dashboard
           </Link>
-          
+
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Property</h1>
@@ -427,36 +415,34 @@ export default function PropertyEditPage() {
                 <Label className="text-sm font-medium text-gray-700 mb-2 block">
                   Property Address *
                 </Label>
-                <AddressAutocomplete
-                  onAddressSelect={handleAddressSelect}
-                  placeholder="Start typing the property address..."
-                  initialValue={formData.address}
+                <Input
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="123 Queen Street"
+                  required
+                  className="mb-4"
                 />
-                {formData.latitude && formData.longitude && (
-                  <div className="mt-2 flex items-center text-sm text-green-600">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    Location verified
-                  </div>
-                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="suburb" className="text-sm font-medium text-gray-700">
-                    Suburb
+                    Suburb *
                   </Label>
                   <Input
                     id="suburb"
                     name="suburb"
                     value={formData.suburb}
                     onChange={handleInputChange}
-                    placeholder="Suburb"
+                    placeholder="Auckland Central"
+                    required
                     className="mt-1"
                   />
                 </div>
                 <div>
                   <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                    City
+                    City *
                   </Label>
                   <select
                     id="city"
@@ -464,6 +450,7 @@ export default function PropertyEditPage() {
                     value={formData.city}
                     onChange={handleInputChange}
                     className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                    required
                   >
                     <option value="Auckland">Auckland</option>
                     <option value="Wellington">Wellington</option>
@@ -625,7 +612,7 @@ export default function PropertyEditPage() {
                     id="is_available"
                     name="is_available"
                     checked={formData.is_available}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, is_available: !!checked })
                     }
                   />
@@ -647,7 +634,7 @@ export default function PropertyEditPage() {
                     id="is_furnished"
                     name="is_furnished"
                     checked={formData.is_furnished}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, is_furnished: !!checked })
                     }
                   />
@@ -658,7 +645,7 @@ export default function PropertyEditPage() {
                     id="utilities_included"
                     name="utilities_included"
                     checked={formData.utilities_included}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, utilities_included: !!checked })
                     }
                   />
@@ -669,7 +656,7 @@ export default function PropertyEditPage() {
                     id="internet_included"
                     name="internet_included"
                     checked={formData.internet_included}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, internet_included: !!checked })
                     }
                   />
@@ -680,7 +667,7 @@ export default function PropertyEditPage() {
                     id="pets_allowed"
                     name="pets_allowed"
                     checked={formData.pets_allowed}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, pets_allowed: !!checked })
                     }
                   />
@@ -691,7 +678,7 @@ export default function PropertyEditPage() {
                     id="smoking_allowed"
                     name="smoking_allowed"
                     checked={formData.smoking_allowed}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       setFormData({ ...formData, smoking_allowed: !!checked })
                     }
                   />
@@ -708,11 +695,10 @@ export default function PropertyEditPage() {
                     <div
                       key={amenity}
                       onClick={() => handleAmenityToggle(amenity)}
-                      className={`p-2 border rounded-lg cursor-pointer text-center text-sm transition-colors ${
-                        formData.amenities.includes(amenity)
+                      className={`p-2 border rounded-lg cursor-pointer text-center text-sm transition-colors ${formData.amenities.includes(amenity)
                           ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {amenity}
                     </div>
@@ -822,10 +808,10 @@ export default function PropertyEditPage() {
                 Cancel Changes
               </Button>
             </Link>
-            
+
             <div className="flex gap-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={saving}
                 className="bg-[#FF5A5F] hover:bg-[#E8474B] flex-1 sm:flex-none"
               >
