@@ -101,11 +101,11 @@ export default function SignupPage() {
             full_name: formData.fullName,
             phone: formData.phone,
             role: formData.role,
-            is_verified: false
+            is_verified: true
           })
 
         if (profileError) throw profileError
-
+        await new Promise(resolve => setTimeout(resolve, 500))
         // Redirect to onboarding based on role
         if (formData.role === 'landlord') {
           router.push('/onboarding/landlord')

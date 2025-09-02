@@ -59,29 +59,29 @@ export default function DashboardPage() {
           return
         }
 
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('auth_id', authUser.id)
-          .maybeSingle()
+        // Try to get profile, with retry for new users
+        let profile = null
+        for (let i = 0; i < 3; i++) {
+          const { data: profileData } = await supabase
+            .from('users')
+            .select('*')
+            .eq('auth_id', authUser.id)
+            .maybeSingle()
+
+          if (profileData) {
+            profile = profileData
+            break
+          }
+
+          // Wait 1 second before retry
+          if (i < 2) await new Promise(resolve => setTimeout(resolve, 1000))
+        }
 
         if (profile) {
           setUser(profile)
-
-          // Optional: Redirect to role-specific pages if you want separate dashboards
-          // Comment out this section if you want all users to stay on /dashboard
-          /*
-          if (profile.role === 'landlord' && pathname === '/dashboard') {
-            router.push('/landlord')
-            return
-          } else if (profile.role === 'tenant' && pathname === '/dashboard') {
-            router.push('/tenant') 
-            return
-          }
-          */
-
           await fetchDashboardData(profile)
         } else {
+          // If still no profile after retries, redirect to login
           router.push('/auth/login')
         }
       } catch (error) {

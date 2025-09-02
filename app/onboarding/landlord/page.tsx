@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Home, 
-  User, 
-  Building, 
-  CheckCircle, 
+import {
+  Home,
+  User,
+  Building,
+  CheckCircle,
   ArrowRight,
   ArrowLeft,
   DollarSign,
@@ -43,7 +43,7 @@ export default function LandlordOnboardingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [onboardingComplete, setOnboardingComplete] = useState(false)
-  
+
   const [data, setData] = useState<OnboardingData>({
     businessName: '',
     businessType: 'individual',
@@ -83,8 +83,23 @@ export default function LandlordOnboardingPage() {
     setError('')
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      // Try multiple times to get the user (handle timing issues)
+      let user = null
+      for (let i = 0; i < 3; i++) {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          user = authUser
+          break
+        }
+        // Wait 1 second before retry
+        if (i < 2) await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+
+      if (!user) {
+        // If still no user, redirect to login
+        router.push('/auth/login')
+        return
+      }
 
       // Update user profile with onboarding data
       const { error } = await supabase
@@ -126,13 +141,13 @@ export default function LandlordOnboardingPage() {
               <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="h-10 w-10 text-green-600" />
               </div>
-              
+
               <h1 className="text-3xl font-bold text-gray-900 mb-4">
                 Account Created Successfully!
               </h1>
-              
+
               <p className="text-lg text-gray-600 mb-8">
-                Your landlord account has been set up. We've sent a verification email 
+                Your landlord account has been set up. We've sent a verification email
                 to confirm your email address.
               </p>
 
@@ -144,7 +159,7 @@ export default function LandlordOnboardingPage() {
                   Check Your Email
                 </h3>
                 <p className="text-blue-800 text-sm">
-                  We've sent a verification link to your email address. 
+                  We've sent a verification link to your email address.
                   Please click the link to verify your account before signing in.
                 </p>
               </div>
@@ -155,10 +170,10 @@ export default function LandlordOnboardingPage() {
                     Sign In to Your Account
                   </Button>
                 </Link>
-                
+
                 <p className="text-sm text-gray-500">
                   Didn't receive the email? Check your spam folder or{' '}
-                  <button 
+                  <button
                     onClick={() => {
                       // In a real app, you'd trigger resend verification email
                       alert('Verification email resent!')
@@ -194,15 +209,13 @@ export default function LandlordOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
                   {stepNumber}
                 </div>
                 {stepNumber < 4 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-16 h-1 mx-2 ${step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -394,11 +407,10 @@ export default function LandlordOnboardingPage() {
                     <div
                       key={goal}
                       onClick={() => handleArrayToggle('goals', goal)}
-                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${
-                        data.goals.includes(goal)
+                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.goals.includes(goal)
                           ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {goal}
                     </div>
@@ -422,11 +434,10 @@ export default function LandlordOnboardingPage() {
                     <div
                       key={channel}
                       onClick={() => handleArrayToggle('marketingChannels', channel)}
-                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${
-                        data.marketingChannels.includes(channel)
+                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.marketingChannels.includes(channel)
                           ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {channel}
                     </div>
@@ -466,7 +477,7 @@ export default function LandlordOnboardingPage() {
                   You're all set!
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Your landlord account is ready. You can now start listing properties 
+                  Your landlord account is ready. You can now start listing properties
                   and managing your rental business with Keyskeeper.
                 </p>
               </div>
@@ -498,7 +509,7 @@ export default function LandlordOnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
-                <Button 
+                <Button
                   onClick={handleComplete}
                   disabled={loading}
                   className="bg-[#FF5A5F] hover:bg-[#E8474B]"

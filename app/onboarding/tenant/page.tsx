@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  User, 
-  MapPin, 
-  DollarSign, 
-  CheckCircle, 
+import {
+  User,
+  MapPin,
+  DollarSign,
+  CheckCircle,
   ArrowRight,
   ArrowLeft,
   Home,
@@ -44,7 +44,7 @@ export default function TenantOnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
+
   const [data, setData] = useState<TenantOnboardingData>({
     currentLocation: '',
     preferredLocations: [],
@@ -88,8 +88,23 @@ export default function TenantOnboardingPage() {
     setError('')
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      // Try multiple times to get the user (handle timing issues)
+      let user = null
+      for (let i = 0; i < 3; i++) {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          user = authUser
+          break
+        }
+        // Wait 1 second before retry
+        if (i < 2) await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+
+      if (!user) {
+        // If still no user, redirect to login
+        router.push('/auth/login')
+        return
+      }
 
       // Update user profile with onboarding data
       const { error } = await supabase
@@ -143,15 +158,13 @@ export default function TenantOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
                   {stepNumber}
                 </div>
                 {stepNumber < 4 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
-                  }`} />
+                  <div className={`w-16 h-1 mx-2 ${step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -203,11 +216,10 @@ export default function TenantOnboardingPage() {
                     <div
                       key={location}
                       onClick={() => handleArrayToggle('preferredLocations', location)}
-                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${
-                        data.preferredLocations.includes(location)
+                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.preferredLocations.includes(location)
                           ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {location}
                     </div>
@@ -328,11 +340,10 @@ export default function TenantOnboardingPage() {
                     <div
                       key={type}
                       onClick={() => handleArrayToggle('propertyTypes', type)}
-                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${
-                        data.propertyTypes.includes(type)
+                      className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.propertyTypes.includes(type)
                           ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
                           : 'border-gray-300 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {type}
                     </div>
@@ -418,7 +429,7 @@ export default function TenantOnboardingPage() {
                   Profile Complete!
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Your tenant profile is ready. You can now search for properties 
+                  Your tenant profile is ready. You can now search for properties
                   and apply with just one click.
                 </p>
               </div>
@@ -450,7 +461,7 @@ export default function TenantOnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
-                <Button 
+                <Button
                   onClick={handleComplete}
                   disabled={loading}
                   className="bg-[#FF5A5F] hover:bg-[#E8474B]"
