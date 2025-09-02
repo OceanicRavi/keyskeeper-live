@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Progress } from '@/components/ui/progress'
 import { TopNavigation } from '@/components/ui/navigation'
 import { supabase } from '@/lib/supabase'
 import { ArrowLeft, Upload, X, MapPin, Home, DollarSign, AlertCircle, CheckCircle } from 'lucide-react'
@@ -84,19 +83,6 @@ const uploadImageToSupabase = async (file: File, onProgress?: (progress: number)
   console.log(`Uploading ${file.name} as ${filePath} (${(file.size / 1024).toFixed(1)}KB)`)
   
   try {
-    // Check if storage bucket exists and is accessible
-/*     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
-    
-    if (bucketsError) {
-      console.error('Storage access error:', bucketsError)
-      throw new Error('Unable to access storage. Please check your Supabase configuration.')
-    }
-    
-    const propertyImagesBucket = buckets?.find(bucket => bucket.name === 'property-images')
-    if (!propertyImagesBucket) {
-      throw new Error('Storage bucket "property-images" not found. Please create it in your Supabase project.')
-    }
-     */
     // Upload file with progress tracking if supported
     const uploadOptions = {
       cacheControl: '31536000', // 1 year
@@ -147,6 +133,16 @@ const uploadImageToSupabase = async (file: File, onProgress?: (progress: number)
     throw error
   }
 }
+
+// Simple progress bar component to replace the problematic one
+const SimpleProgressBar = ({ value, className = "" }: { value: number; className?: string }) => (
+  <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
+    <div 
+      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out" 
+      style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+    />
+  </div>
+)
 
 export default function PropertyListingForm() {
   const router = useRouter()
@@ -504,7 +500,7 @@ export default function PropertyListingForm() {
                 <Upload className="h-5 w-5 text-blue-600" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-blue-900">Uploading images...</p>
-                  <Progress value={uploadProgress} className="mt-2" />
+                  <SimpleProgressBar value={uploadProgress} className="mt-2" />
                   <p className="text-xs text-blue-700 mt-1">{uploadProgress}% complete</p>
                 </div>
               </div>
