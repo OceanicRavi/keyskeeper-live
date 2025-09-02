@@ -67,7 +67,7 @@ export function CTASection() {
             {/* Badge Section */}
             <div className="mt-6 flex justify-center">
               <img
-                src="/reinz-logo.png"
+                src="/reinz-logo1.png"
                 alt="REINZ Logo"
                 className="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity"
               />
