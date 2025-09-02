@@ -60,6 +60,76 @@ const amenityOptions = [
   'Dishwasher', 'Air Conditioning', 'Heating', 'Security', 'Storage'
 ]
 
+// Helper function to upload images to Supabase Storage
+const uploadImageToStorage = async (file: File, propertyId: string): Promise<string> => {
+  console.log(`Starting upload for file: ${file.name}, size: ${file.size} bytes`)
+  
+  const fileExt = file.name.split('.').pop()
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
+  const filePath = `properties/${propertyId}/${fileName}`
+
+  console.log(`Uploading to path: ${filePath}`)
+
+  // First, check if the bucket exists
+/*    const { data: buckets, error: bucketError } = await supabase.storage.listBuckets()
+  console.log('Available buckets:', buckets?.map(b => b.name))
+  
+  if (bucketError) {
+    console.error('Error listing buckets:', bucketError)
+    throw new Error(`Storage access error: ${bucketError.message}`)
+  }
+
+  const bucketExists = buckets?.some(bucket => bucket.name === 'property-images')
+  if (!bucketExists) {
+    throw new Error('Storage bucket "property-images" does not exist. Please create it in your Supabase dashboard.')
+  }  */
+
+  const { data, error } = await supabase.storage
+    .from('property-images')
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
+    })
+
+  if (error) {
+    console.error('Upload error:', error)
+    throw new Error(`Failed to upload image: ${error.message}`)
+  }
+
+  console.log('Upload successful:', data)
+
+  // Get the public URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('property-images')
+    .getPublicUrl(filePath)
+
+  console.log('Generated public URL:', publicUrl)
+  return publicUrl
+}
+
+// Helper function to delete images from Supabase Storage
+const deleteImageFromStorage = async (imageUrl: string): Promise<void> => {
+  try {
+    // Extract the file path from the URL
+    const url = new URL(imageUrl)
+    const pathParts = url.pathname.split('/')
+    const bucketIndex = pathParts.indexOf('property-images')
+    if (bucketIndex === -1) return // Not a storage URL
+    
+    const filePath = pathParts.slice(bucketIndex + 1).join('/')
+    
+    const { error } = await supabase.storage
+      .from('property-images')
+      .remove([filePath])
+
+    if (error) {
+      console.error('Failed to delete image from storage:', error)
+    }
+  } catch (error) {
+    console.error('Error parsing image URL for deletion:', error)
+  }
+}
+
 export default function PropertyEditPage() {
   const params = useParams()
   const router = useRouter()
@@ -96,6 +166,7 @@ export default function PropertyEditPage() {
   const [success, setSuccess] = useState('')
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imagesToDelete, setImagesToDelete] = useState<string[]>([])
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -191,6 +262,23 @@ export default function PropertyEditPage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    
+    // Validate file sizes (5MB max per file)
+    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024)
+    if (oversizedFiles.length > 0) {
+      setError(`Some files are too large. Maximum size is 5MB per image.`)
+      return
+    }
+
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    const invalidFiles = files.filter(file => !validTypes.includes(file.type))
+    if (invalidFiles.length > 0) {
+      setError('Please upload only image files (JPG, PNG, GIF, WebP)')
+      return
+    }
+
+    // Check total image count
     if (files.length + formData.images.length + imageFiles.length > 10) {
       setError('Maximum 10 images allowed')
       return
@@ -217,6 +305,7 @@ export default function PropertyEditPage() {
     setSaving(true)
     setError('')
     setSuccess('')
+    setUploadProgress({})
 
     try {
       // Validate required fields
@@ -224,26 +313,73 @@ export default function PropertyEditPage() {
         throw new Error('Please fill in all required fields')
       }
 
-      // For demo purposes, we'll update without handling image upload
-      // In production, you'd upload new images to storage first
-      const updatedData = {
-        ...formData,
-        images: [
-          ...formData.images,
-          ...imageFiles.map((_, index) => `https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800`) // Mock URLs
-        ]
+      if (!params.id) {
+        throw new Error('Property ID is missing')
       }
 
-      const { error } = await supabase
+      console.log(`Starting save process. Images to upload: ${imageFiles.length}`)
+
+      // Step 1: Upload new images to Supabase Storage
+      const newImageUrls: string[] = []
+      
+      if (imageFiles.length > 0) {
+        console.log('Starting image uploads...')
+        
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i]
+          try {
+            console.log(`Uploading file ${i + 1}/${imageFiles.length}: ${file.name}`)
+            setUploadProgress(prev => ({ ...prev, [file.name]: 25 }))
+            
+            const imageUrl = await uploadImageToStorage(file, params.id as string)
+            newImageUrls.push(imageUrl)
+            
+            setUploadProgress(prev => ({ ...prev, [file.name]: 100 }))
+            console.log(`Successfully uploaded: ${file.name} -> ${imageUrl}`)
+          } catch (uploadError: any) {
+            console.error(`Failed to upload ${file.name}:`, uploadError)
+            throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`)
+          }
+        }
+        console.log('All images uploaded successfully')
+      }
+
+      // Step 2: Delete images that were marked for deletion
+      if (imagesToDelete.length > 0) {
+        console.log(`Deleting ${imagesToDelete.length} images from storage...`)
+        for (const imageUrl of imagesToDelete) {
+          try {
+            await deleteImageFromStorage(imageUrl)
+            console.log(`Deleted image: ${imageUrl}`)
+          } catch (deleteError) {
+            console.error('Failed to delete image:', deleteError)
+            // Don't throw here - we still want to update the property even if image deletion fails
+          }
+        }
+      }
+
+      // Step 3: Update property with new data
+      console.log('Updating property in database...')
+      const updatedData = {
+        ...formData,
+        images: [...formData.images, ...newImageUrls]
+      }
+
+      const { error: updateError } = await supabase
         .from('properties')
         .update(updatedData)
         .eq('id', params.id)
 
-      if (error) throw error
+      if (updateError) {
+        console.error('Database update error:', updateError)
+        throw updateError
+      }
 
+      console.log('Property updated successfully')
       setSuccess('Property updated successfully!')
       setImageFiles([])
       setImagesToDelete([])
+      setUploadProgress({})
 
       // Refresh property data
       const { data: refreshedProperty } = await supabase
@@ -254,12 +390,18 @@ export default function PropertyEditPage() {
 
       if (refreshedProperty) {
         setProperty(refreshedProperty)
+        setFormData(prev => ({
+          ...prev,
+          images: refreshedProperty.images || []
+        }))
       }
 
     } catch (error: any) {
+      console.error('Save error:', error)
       setError(error.message || 'Failed to update property')
     } finally {
       setSaving(false)
+      setUploadProgress({})
     }
   }
 
@@ -272,6 +414,18 @@ export default function PropertyEditPage() {
     setError('')
 
     try {
+      // First, delete all images from storage
+      if (property?.images && property.images.length > 0) {
+        for (const imageUrl of property.images) {
+          try {
+            await deleteImageFromStorage(imageUrl)
+          } catch (deleteError) {
+            console.error('Failed to delete image during property deletion:', deleteError)
+          }
+        }
+      }
+
+      // Then delete the property record
       const { error } = await supabase
         .from('properties')
         .delete()
@@ -769,6 +923,12 @@ export default function PropertyEditPage() {
                         >
                           <X className="h-3 w-3" />
                         </Button>
+                        {/* Upload Progress */}
+                        {uploadProgress[file.name] && uploadProgress[file.name] < 100 && (
+                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b-lg">
+                            Uploading... {uploadProgress[file.name]}%
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -793,9 +953,13 @@ export default function PropertyEditPage() {
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
+                      disabled={saving}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB each. Max 10 images total.</p>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 5MB each. Max 10 images total.</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Current: {formData.images.length + imageFiles.length}/10 images
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -818,7 +982,7 @@ export default function PropertyEditPage() {
                 {saving ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Saving...
+                    {imageFiles.length > 0 ? 'Uploading Images...' : 'Saving...'}
                   </>
                 ) : (
                   <>

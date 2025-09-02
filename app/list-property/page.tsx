@@ -1,3 +1,4 @@
+// app/list-property/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -45,6 +46,108 @@ const amenityOptions = [
   'Dishwasher', 'Air Conditioning', 'Heating', 'Security', 'Storage'
 ]
 
+// Helper function to generate unique filename
+const generateUniqueFileName = (file: File): string => {
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substring(2)
+  const extension = file.name.split('.').pop()?.toLowerCase()
+  return `property-${timestamp}-${random}.${extension}`
+}
+
+// Helper function to validate file
+const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
+  const maxSize = 5 * 1024 * 1024 // 5MB
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  
+  if (!allowedTypes.includes(file.type)) {
+    return { isValid: false, error: `Invalid file type: ${file.type}. Only JPG, PNG, and WebP are allowed.` }
+  }
+  
+  if (file.size > maxSize) {
+    return { isValid: false, error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum size is 5MB.` }
+  }
+  
+  return { isValid: true }
+}
+
+// Enhanced image upload function with proper error handling
+const uploadImageToSupabase = async (file: File, onProgress?: (progress: number) => void): Promise<string> => {
+  // Validate file first
+  const validation = validateImageFile(file)
+  if (!validation.isValid) {
+    throw new Error(validation.error)
+  }
+
+  const fileName = generateUniqueFileName(file)
+  const filePath = `property-images/${fileName}`
+  
+  console.log(`Uploading ${file.name} as ${filePath} (${(file.size / 1024).toFixed(1)}KB)`)
+  
+  try {
+    // Check if storage bucket exists and is accessible
+/*     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+    
+    if (bucketsError) {
+      console.error('Storage access error:', bucketsError)
+      throw new Error('Unable to access storage. Please check your Supabase configuration.')
+    }
+    
+    const propertyImagesBucket = buckets?.find(bucket => bucket.name === 'property-images')
+    if (!propertyImagesBucket) {
+      throw new Error('Storage bucket "property-images" not found. Please create it in your Supabase project.')
+    }
+     */
+    // Upload file with progress tracking if supported
+    const uploadOptions = {
+      cacheControl: '31536000', // 1 year
+      upsert: false
+    }
+    
+    const { data, error } = await supabase.storage
+      .from('property-images')
+      .upload(filePath, file, uploadOptions)
+    
+    if (error) {
+      console.error('Upload error details:', error)
+      if (error.message.includes('The resource already exists')) {
+        // File already exists, try with new name
+        const newFileName = generateUniqueFileName(file)
+        const newFilePath = `property-images/${newFileName}`
+        const { data: retryData, error: retryError } = await supabase.storage
+          .from('property-images')
+          .upload(newFilePath, file, uploadOptions)
+        
+        if (retryError) {
+          throw new Error(`Upload failed: ${retryError.message}`)
+        }
+        
+        // Get public URL for the new file
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-images')
+          .getPublicUrl(newFilePath)
+        
+        console.log(`Successfully uploaded ${file.name} to ${newFilePath}`)
+        return publicUrl
+      } else {
+        throw new Error(`Upload failed: ${error.message}`)
+      }
+    }
+    
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('property-images')
+      .getPublicUrl(filePath)
+    
+    console.log(`Successfully uploaded ${file.name} to ${filePath}`)
+    console.log(`Public URL: ${publicUrl}`)
+    
+    return publicUrl
+  } catch (error) {
+    console.error('Image upload error:', error)
+    throw error
+  }
+}
+
 export default function PropertyListingForm() {
   const router = useRouter()
   const [formData, setFormData] = useState<PropertyFormData>({
@@ -76,6 +179,7 @@ export default function PropertyListingForm() {
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const [individualProgress, setIndividualProgress] = useState<{ [key: string]: number }>({})
 
   // Step validation function
   const validateStep = (stepNumber: number): { isValid: boolean; errors: string[] } => {
@@ -127,96 +231,100 @@ export default function PropertyListingForm() {
     setFormData({ ...formData, amenities: updatedAmenities })
   }
 
-  // Image upload with validation
+  // Enhanced image upload with validation
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    if (files.length + imageFiles.length > 10) {
+    
+    if (files.length + imageFiles.length + uploadedImageUrls.length > 10) {
       setError('Maximum 10 images allowed')
       return
     }
     
-    // Validate file types and sizes
-    const validFiles = files.filter(file => {
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-      const maxSize = 5 * 1024 * 1024 // 5MB
-      
-      if (!validTypes.includes(file.type)) {
-        setError(`${file.name} is not a supported image format. Please use JPG, PNG, or WebP.`)
-        return false
+    // Validate each file
+    const invalidFiles: string[] = []
+    const validFiles: File[] = []
+    
+    files.forEach(file => {
+      const validation = validateImageFile(file)
+      if (validation.isValid) {
+        validFiles.push(file)
+      } else {
+        invalidFiles.push(`${file.name}: ${validation.error}`)
       }
-      
-      if (file.size > maxSize) {
-        setError(`${file.name} is too large. Maximum file size is 5MB.`)
-        return false
-      }
-      
-      return true
     })
+    
+    if (invalidFiles.length > 0) {
+      setError(`Invalid files: ${invalidFiles.join(', ')}`)
+      return
+    }
     
     if (validFiles.length > 0) {
       setImageFiles([...imageFiles, ...validFiles])
       setError('') // Clear any previous errors
     }
+    
+    // Reset the input
+    e.target.value = ''
   }
 
   const removeImage = (index: number) => {
     const newImageFiles = imageFiles.filter((_, i) => i !== index)
     setImageFiles(newImageFiles)
-    
-    // Also remove from uploaded URLs if it was already uploaded
-    if (uploadedImageUrls[index]) {
-      const newUploadedUrls = uploadedImageUrls.filter((_, i) => i !== index)
-      setUploadedImageUrls(newUploadedUrls)
-    }
   }
 
-  // Upload images to Supabase Storage
-  const uploadImagesToStorage = async (files: File[]): Promise<string[]> => {
-    if (files.length === 0) return []
+  // Remove uploaded image (you might want to delete from storage too)
+  const removeUploadedImage = (index: number) => {
+    const newUploadedUrls = uploadedImageUrls.filter((_, i) => i !== index)
+    setUploadedImageUrls(newUploadedUrls)
+  }
+
+  // Upload all images with progress tracking
+  const uploadAllImages = async (): Promise<string[]> => {
+    if (imageFiles.length === 0) {
+      return uploadedImageUrls // Return already uploaded images
+    }
     
     setIsUploading(true)
     setUploadProgress(0)
-    const uploadedUrls: string[] = []
+    const newUploadedUrls: string[] = [...uploadedImageUrls]
     
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const fileExt = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-        const filePath = `property-images/${fileName}`
+      for (let i = 0; i < imageFiles.length; i++) {
+        const file = imageFiles[i]
+        const fileKey = `${file.name}-${i}`
         
-        console.log(`Uploading ${file.name} to ${filePath}`)
+        // Set individual progress
+        setIndividualProgress(prev => ({ ...prev, [fileKey]: 0 }))
         
-        const { data, error } = await supabase.storage
-          .from('property-images')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
+        try {
+          const imageUrl = await uploadImageToSupabase(file, (progress) => {
+            setIndividualProgress(prev => ({ ...prev, [fileKey]: progress }))
           })
-        
-        if (error) {
-          console.error('Upload error:', error)
-          throw new Error(`Failed to upload ${file.name}: ${error.message}`)
+          
+          newUploadedUrls.push(imageUrl)
+          
+          // Update overall progress
+          const overallProgress = Math.round(((i + 1) / imageFiles.length) * 100)
+          setUploadProgress(overallProgress)
+          
+          setIndividualProgress(prev => ({ ...prev, [fileKey]: 100 }))
+          
+        } catch (uploadError: any) {
+          console.error(`Failed to upload ${file.name}:`, uploadError)
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`)
         }
-        
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('property-images')
-          .getPublicUrl(filePath)
-        
-        uploadedUrls.push(publicUrl)
-        console.log(`Uploaded ${file.name}, URL: ${publicUrl}`)
-        
-        // Update progress
-        setUploadProgress(Math.round(((i + 1) / files.length) * 100))
       }
       
-      return uploadedUrls
+      setUploadedImageUrls(newUploadedUrls)
+      setImageFiles([]) // Clear the files array since they're now uploaded
+      return newUploadedUrls
+      
     } catch (error) {
-      console.error('Image upload failed:', error)
+      console.error('Batch upload failed:', error)
       throw error
     } finally {
       setIsUploading(false)
+      setIndividualProgress({})
     }
   }
 
@@ -269,19 +377,21 @@ export default function PropertyListingForm() {
         throw new Error('User profile not found')
       }
       
-      // Upload images first if any are selected
-      let imageUrls: string[] = []
-      if (imageFiles.length > 0) {
+      // Upload all images first
+      let finalImageUrls: string[] = []
+      
+      if (imageFiles.length > 0 || uploadedImageUrls.length > 0) {
         try {
-          imageUrls = await uploadImagesToStorage(imageFiles)
+          finalImageUrls = await uploadAllImages()
         } catch (uploadError: any) {
           throw new Error(`Image upload failed: ${uploadError.message}`)
         }
       }
       
-      // If no images uploaded, use a default placeholder
-      if (imageUrls.length === 0) {
-        imageUrls = ['https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800']
+      // If no images were uploaded, use a default placeholder
+      if (finalImageUrls.length === 0) {
+        console.warn('No images uploaded, using placeholder')
+        finalImageUrls = ['https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800']
       }
       
       // Create property data
@@ -292,12 +402,13 @@ export default function PropertyListingForm() {
         suburb: formData.suburb,
         city: formData.city,
         postcode: formData.postcode || null,
+        country: 'New Zealand',
         property_type: formData.property_type,
         bedrooms: formData.bedrooms,
         bathrooms: formData.bathrooms,
         parking_spaces: formData.parking_spaces,
         price_per_week: formData.price_per_week,
-        bond_amount: formData.bond_amount,
+        bond_amount: formData.bond_amount || null,
         utilities_included: formData.utilities_included,
         internet_included: formData.internet_included,
         is_furnished: formData.is_furnished,
@@ -305,10 +416,10 @@ export default function PropertyListingForm() {
         smoking_allowed: formData.smoking_allowed,
         available_from: formData.available_from,
         amenities: formData.amenities,
-        images: imageUrls, // Real uploaded image URLs
+        images: finalImageUrls,
         landlord_id: userProfile.id,
         is_available: true,
-        compliance_status: 'pending'
+        compliance_status: 'pending' as const
       }
 
       console.log('Creating property with data:', propertyData)
