@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { 
   Users, 
@@ -37,6 +37,10 @@ export default function AdminUsersPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole | 'all'>('all')
   const [error, setError] = useState('')
   const [showCreateUser, setShowCreateUser] = useState(false)
+  const [showEditUser, setShowEditUser] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [userToEdit, setUserToEdit] = useState<User | null>(null)
 
   const [newUser, setNewUser] = useState({
     email: '',
@@ -46,10 +50,17 @@ export default function AdminUsersPage() {
     role: 'tenant' as UserRole
   })
 
+  const [editUser, setEditUser] = useState({
+    full_name: '',
+    phone: '',
+    role: 'tenant' as UserRole,
+    is_verified: false
+  })
+
   useEffect(() => {
     checkAdminAccess()
     fetchUsers()
-  }, [])
+  }, [selectedRole])
 
   const checkAdminAccess = async () => {
     try {
@@ -144,18 +155,49 @@ export default function AdminUsersPage() {
     }
   }
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      return
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!userToEdit) return
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          full_name: editUser.full_name,
+          phone: editUser.phone,
+          role: editUser.role,
+          is_verified: editUser.is_verified
+        })
+        .eq('id', userToEdit.id)
+
+      if (error) throw error
+
+      setShowEditUser(false)
+      setUserToEdit(null)
+      await fetchUsers()
+    } catch (error: any) {
+      setError(error.message || 'Failed to update user')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return
 
     try {
       const { error } = await supabase
         .from('users')
         .delete()
-        .eq('id', userId)
+        .eq('id', userToDelete.id)
 
       if (error) throw error
+      
+      setShowDeleteDialog(false)
+      setUserToDelete(null)
       await fetchUsers()
     } catch (error: any) {
       setError(error.message || 'Failed to delete user')
@@ -174,6 +216,22 @@ export default function AdminUsersPage() {
     } catch (error: any) {
       setError(error.message || 'Failed to update user verification')
     }
+  }
+
+  const openEditDialog = (user: User) => {
+    setUserToEdit(user)
+    setEditUser({
+      full_name: user.full_name || '',
+      phone: user.phone || '',
+      role: user.role,
+      is_verified: user.is_verified
+    })
+    setShowEditUser(true)
+  }
+
+  const openDeleteDialog = (user: User) => {
+    setUserToDelete(user)
+    setShowDeleteDialog(true)
   }
 
   const filteredUsers = users.filter(user => {
@@ -333,10 +391,7 @@ export default function AdminUsersPage() {
               </div>
               <select
                 value={selectedRole}
-                onChange={(e) => {
-                  setSelectedRole(e.target.value as UserRole | 'all')
-                  fetchUsers()
-                }}
+                onChange={(e) => setSelectedRole(e.target.value as UserRole | 'all')}
                 className="px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="all">All Roles</option>
@@ -429,13 +484,18 @@ export default function AdminUsersPage() {
                                 <Eye className="h-4 w-4 text-green-600" />
                               )}
                             </Button>
-                            <Button variant="ghost" size="sm" title="Edit user">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              title="Edit user"
+                              onClick={() => openEditDialog(user)}
+                            >
                               <Edit className="h-4 w-4 text-blue-600" />
                             </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => openDeleteDialog(user)}
                               className="text-red-600 hover:text-red-700"
                               title="Delete user"
                             >
@@ -479,6 +539,92 @@ export default function AdminUsersPage() {
             )
           })}
         </div>
+
+        {/* Edit User Dialog */}
+        <Dialog open={showEditUser} onOpenChange={setShowEditUser}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit User</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleEditUser} className="space-y-4">
+              <div>
+                <Label htmlFor="edit_full_name">Full Name</Label>
+                <Input
+                  id="edit_full_name"
+                  value={editUser.full_name}
+                  onChange={(e) => setEditUser({...editUser, full_name: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit_phone">Phone</Label>
+                <Input
+                  id="edit_phone"
+                  type="tel"
+                  value={editUser.phone}
+                  onChange={(e) => setEditUser({...editUser, phone: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit_role">Role</Label>
+                <select
+                  id="edit_role"
+                  value={editUser.role}
+                  onChange={(e) => setEditUser({...editUser, role: e.target.value as UserRole})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="tenant">Tenant</option>
+                  <option value="landlord">Landlord</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit_verified"
+                  checked={editUser.is_verified}
+                  onChange={(e) => setEditUser({...editUser, is_verified: e.target.checked})}
+                  className="h-4 w-4"
+                />
+                <Label htmlFor="edit_verified">Verified User</Label>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowEditUser(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                  {loading ? 'Updating...' : 'Update User'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete User</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-gray-600">
+                Are you sure you want to delete <strong>{userToDelete?.full_name || userToDelete?.email}</strong>? 
+                This action cannot be undone and will remove all associated data including leases, payments, and maintenance requests.
+              </p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleDeleteUser}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Delete User
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <BottomNavigation />

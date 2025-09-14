@@ -996,20 +996,6 @@ export default function PropertyListingForm() {
                   </div>
                 </div>
 
-                {/* Supabase Storage Setup Notice */}
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-start">
-                    <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
-                    <div>
-                      <h5 className="font-medium text-amber-900 mb-1">Image Upload Setup</h5>
-                      <p className="text-sm text-amber-800">
-                        Make sure you have created a <strong>"property-images"</strong> storage bucket in your Supabase project 
-                        with public access enabled. Images will be uploaded to Supabase Storage and their URLs saved to the database.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="flex justify-between">
                   <Button type="button" variant="outline" onClick={prevStep} disabled={loading || isUploading}>
                     Back

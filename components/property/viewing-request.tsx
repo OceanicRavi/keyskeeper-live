@@ -78,8 +78,10 @@ export default function ViewingRequest({
     setError('')
 
     try {
+      console.log('Submitting viewing request...', { propertyId, formData })
+
       // Create viewing request in database
-      const { error: dbError } = await supabase
+      const { data: insertData, error: dbError } = await supabase
         .from('viewing_requests')
         .insert([{
           property_id: propertyId,
@@ -94,30 +96,49 @@ export default function ViewingRequest({
           number_of_viewers: formData.numberOfViewers,
           status: 'pending'
         }])
+        .select()
 
-      if (dbError) throw dbError
+      if (dbError) {
+        console.error('Database error:', dbError)
+        throw new Error(`Database error: ${dbError.message}`)
+      }
 
-      // Send email notification to landlord
-      const emailResponse = await fetch('/api/send-viewing-request-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          propertyTitle,
-          propertyAddress
-        }),
-      })
+      console.log('Database insert successful:', insertData)
 
-      if (!emailResponse.ok) {
-        console.warn('Email notification failed, but viewing request was saved')
+      // Try to send email notification (don't let this fail the whole process)
+      try {
+        const emailResponse = await fetch('/api/send-viewing-request-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            propertyTitle,
+            propertyAddress
+          }),
+        })
+
+        if (!emailResponse.ok) {
+          console.warn('Email notification failed:', await emailResponse.text())
+        } else {
+          console.log('Email notification sent successfully')
+        }
+      } catch (emailError) {
+        console.warn('Email notification failed:', emailError)
+        // Don't fail the whole process if email fails
       }
 
       setSuccess(true)
-      if (onSuccess) onSuccess()
+      console.log('Viewing request submitted successfully')
+      
+      if (onSuccess) {
+        setTimeout(() => onSuccess(), 1000) // Small delay to show success message
+      }
+
     } catch (error: any) {
-      setError(error.message || 'Failed to submit viewing request')
+      console.error('Viewing request submission error:', error)
+      setError(error.message || 'Failed to submit viewing request. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -189,6 +210,7 @@ export default function ViewingRequest({
                   required
                   className="mt-1"
                   placeholder="John Smith"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -202,6 +224,7 @@ export default function ViewingRequest({
                   required
                   className="mt-1"
                   placeholder="john@example.com"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -215,6 +238,7 @@ export default function ViewingRequest({
                   required
                   className="mt-1"
                   placeholder="+64 27 123 4567"
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -228,6 +252,7 @@ export default function ViewingRequest({
                   value={formData.numberOfViewers}
                   onChange={handleInputChange}
                   className="mt-1"
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -248,6 +273,7 @@ export default function ViewingRequest({
                   required
                   className="mt-1"
                   min={new Date().toISOString().split('T')[0]}
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -258,7 +284,8 @@ export default function ViewingRequest({
                   value={formData.preferredTime}
                   onChange={handleInputChange}
                   required
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  disabled={loading}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F] disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Select time</option>
                   <option value="09:00">9:00 AM</option>
@@ -283,6 +310,7 @@ export default function ViewingRequest({
                   onChange={handleInputChange}
                   className="mt-1"
                   min={new Date().toISOString().split('T')[0]}
+                  disabled={loading}
                 />
               </div>
               <div>
@@ -292,7 +320,8 @@ export default function ViewingRequest({
                   name="alternativeTime"
                   value={formData.alternativeTime}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  disabled={loading}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F] disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Select time</option>
                   <option value="09:00">9:00 AM</option>
@@ -321,6 +350,7 @@ export default function ViewingRequest({
               placeholder="Any questions or additional information..."
               rows={4}
               className="mt-1"
+              disabled={loading}
             />
           </div>
 
@@ -343,16 +373,24 @@ export default function ViewingRequest({
                 variant="outline" 
                 onClick={onCancel}
                 className="flex-1"
+                disabled={loading}
               >
                 Cancel
               </Button>
             )}
             <Button 
               type="submit" 
-              className="flex-1 bg-[#FF5A5F] hover:bg-[#E8474B]"
+              className="flex-1 bg-[#FF5A5F] hover:bg-[#E8474B] disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={loading}
             >
-              {loading ? 'Submitting...' : 'Request Viewing'}
+              {loading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Submitting...
+                </div>
+              ) : (
+                'Request Viewing'
+              )}
             </Button>
           </div>
         </form>

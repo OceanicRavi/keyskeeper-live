@@ -39,7 +39,7 @@ export default function LoginPage() {
         // Get user profile to determine role and redirect
         const { data: profile, error: profileError } = await supabase
           .from('users')
-          .select('role, is_verified')
+          .select('role')
           .eq('auth_id', data.user.id)
           .maybeSingle()
 

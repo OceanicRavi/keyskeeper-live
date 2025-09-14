@@ -147,22 +147,8 @@ export default function LandlordOnboardingPage() {
               </h1>
 
               <p className="text-lg text-gray-600 mb-8">
-                Your landlord account has been set up. We've sent a verification email
-                to confirm your email address.
+                Your landlord account has been set up. Please sign in to your dashboard.
               </p>
-
-              <div className="bg-blue-50 rounded-lg p-6 mb-8">
-                <div className="flex items-center justify-center mb-4">
-                  <Mail className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                  Check Your Email
-                </h3>
-                <p className="text-blue-800 text-sm">
-                  We've sent a verification link to your email address.
-                  Please click the link to verify your account before signing in.
-                </p>
-              </div>
 
               <div className="space-y-4">
                 <Link href="/auth/login">
