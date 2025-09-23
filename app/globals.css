@@ -3,73 +3,127 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 43, 39, 38; /* #2B2726 - deep espresso */
-  --background-start-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
-  --background-end-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
+  --foreground-rgb: 43, 39, 38;
+  /* #2B2726 - deep espresso */
+  --background-start-rgb: 245, 243, 242;
+  /* #F5F3F2 - off-white */
+  --background-end-rgb: 245, 243, 242;
+  /* #F5F3F2 - off-white */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
-    --background-start-rgb: 43, 39, 38; /* #2B2726 - deep espresso */
-    --background-end-rgb: 80, 71, 70; /* #504746 - dark taupe */
+    --foreground-rgb: 245, 243, 242;
+    /* #F5F3F2 - off-white */
+    --background-start-rgb: 43, 39, 38;
+    /* #2B2726 - deep espresso */
+    --background-end-rgb: 80, 71, 70;
+    /* #504746 - dark taupe */
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 96%; /* #F5F3F2 - off-white */
-    --foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --card: 0 0% 96%; /* #F5F3F2 - off-white */
-    --card-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --popover: 0 0% 96%; /* #F5F3F2 - off-white */
-    --popover-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --primary: 18 11% 31%; /* #504746 - dark taupe (main brand) */
-    --primary-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --secondary: 25 7% 87%; /* #E0DDDB - light warm gray */
-    --secondary-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --muted: 25 7% 87%; /* #E0DDDB - light warm gray */
-    --muted-foreground: 18 11% 31%; /* #504746 - dark taupe */
-    --accent: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --accent-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --destructive: 7 71% 57%; /* #D95C4D - earthy terracotta */
-    --destructive-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --border: 25 7% 87%; /* #E0DDDB - light warm gray */
-    --input: 25 7% 87%; /* #E0DDDB - light warm gray */
-    --ring: 18 11% 31%; /* #504746 - dark taupe */
-    --chart-1: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --chart-2: 200 44% 54%; /* #3B7EA1 - muted teal */
-    --chart-3: 18 11% 31%; /* #504746 - dark taupe */
-    --chart-4: 25 16% 48%; /* #8C756D - dusty mauve */
-    --chart-5: 7 71% 57%; /* #D95C4D - earthy terracotta */
+    --background: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --card: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --card-foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --popover: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --popover-foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --primary: 18 11% 31%;
+    /* #504746 - dark taupe (main brand) */
+    --primary-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --secondary: 25 7% 87%;
+    /* #E0DDDB - light warm gray */
+    --secondary-foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --muted: 25 7% 87%;
+    /* #E0DDDB - light warm gray */
+    --muted-foreground: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --accent: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --accent-foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --destructive: 7 71% 57%;
+    /* #D95C4D - earthy terracotta */
+    --destructive-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --border: 25 7% 87%;
+    /* #E0DDDB - light warm gray */
+    --input: 25 7% 87%;
+    /* #E0DDDB - light warm gray */
+    --ring: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --chart-1: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --chart-2: 200 44% 54%;
+    /* #3B7EA1 - muted teal */
+    --chart-3: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --chart-4: 25 16% 48%;
+    /* #8C756D - dusty mauve */
+    --chart-5: 7 71% 57%;
+    /* #D95C4D - earthy terracotta */
     --radius: 0.5rem;
   }
-  
+
   .dark {
-    --background: 23 7% 17%; /* #2B2726 - deep espresso */
-    --foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --card: 18 11% 31%; /* #504746 - dark taupe */
-    --card-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --popover: 18 11% 31%; /* #504746 - dark taupe */
-    --popover-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --primary: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --primary-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
-    --secondary: 18 11% 31%; /* #504746 - dark taupe */
-    --secondary-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --muted: 18 11% 31%; /* #504746 - dark taupe */
-    --muted-foreground: 25 7% 87%; /* #E0DDDB - light warm gray */
-    --accent: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --accent-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --destructive: 7 71% 57%; /* #D95C4D - earthy terracotta */
-    --destructive-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
-    --border: 18 11% 31%; /* #504746 - dark taupe */
-    --input: 18 11% 31%; /* #504746 - dark taupe */
-    --ring: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --chart-1: 194 43% 51%; /* #4A9FB8 - warm cyan */
-    --chart-2: 200 44% 54%; /* #3B7EA1 - muted teal */
-    --chart-3: 25 16% 48%; /* #8C756D - dusty mauve */
-    --chart-4: 7 71% 57%; /* #D95C4D - earthy terracotta */
-    --chart-5: 0 0% 96%; /* #F5F3F2 - off-white */
+    --background: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --card: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --card-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --popover: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --popover-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --primary: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --primary-foreground: 23 7% 17%;
+    /* #2B2726 - deep espresso */
+    --secondary: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --secondary-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --muted: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --muted-foreground: 25 7% 87%;
+    /* #E0DDDB - light warm gray */
+    --accent: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --accent-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --destructive: 7 71% 57%;
+    /* #D95C4D - earthy terracotta */
+    --destructive-foreground: 0 0% 96%;
+    /* #F5F3F2 - off-white */
+    --border: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --input: 18 11% 31%;
+    /* #504746 - dark taupe */
+    --ring: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --chart-1: 194 43% 51%;
+    /* #4A9FB8 - warm cyan */
+    --chart-2: 200 44% 54%;
+    /* #3B7EA1 - muted teal */
+    --chart-3: 25 16% 48%;
+    /* #8C756D - dusty mauve */
+    --chart-4: 7 71% 57%;
+    /* #D95C4D - earthy terracotta */
+    --chart-5: 0 0% 96%;
+    /* #F5F3F2 - off-white */
   }
 }
 
@@ -77,6 +131,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -111,34 +166,41 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #E0DDDB; /* Updated to light warm gray */
+  background: #E0DDDB;
+  /* Updated to light warm gray */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8C756D; /* Updated to dusty mauve */
+  background: #8C756D;
+  /* Updated to dusty mauve */
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #504746; /* Updated to dark taupe */
+  background: #504746;
+  /* Updated to dark taupe */
 }
 
 /* Focus styles for accessibility - Updated to warm cyan */
 .focus-visible\:ring-keyskeeper:focus-visible {
-  --tw-ring-color: #4A9FB8; /* Updated to warm cyan */
+  --tw-ring-color: #4A9FB8;
+  /* Updated to warm cyan */
 }
 
 /* Updated brand colors */
 .text-keyskeeper {
-  color: #504746; /* Primary brand color - dark taupe */
+  color: #504746;
+  /* Primary brand color - dark taupe */
 }
 
 .bg-keyskeeper {
-  background-color: #504746; /* Primary brand color - dark taupe */
+  background-color: #504746;
+  /* Primary brand color - dark taupe */
 }
 
 .border-keyskeeper {
-  border-color: #504746; /* Primary brand color - dark taupe */
+  border-color: #504746;
+  /* Primary brand color - dark taupe */
 }
 
 /* Additional color utility classes for your new palette */
@@ -232,6 +294,7 @@ html {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -247,7 +310,7 @@ html {
   .hover\:scale-105:hover {
     transform: none;
   }
-  
+
   .group:hover .group-hover\:scale-105 {
     transform: none;
   }
@@ -256,16 +319,19 @@ html {
 /* High contrast for better visibility - Updated for new palette */
 @media (prefers-contrast: high) {
   .text-gray-500 {
-    color: #504746; /* dark taupe */
+    color: #504746;
+    /* dark taupe */
   }
-  
+
   .text-gray-600 {
-    color: #2B2726; /* deep espresso */
+    color: #2B2726;
+    /* deep espresso */
   }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
