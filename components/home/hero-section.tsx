@@ -30,11 +30,11 @@ export function HeroSection() {
   return (
     <>
       <div className="relative min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
-        {/* Background Image */}
+        {/* Background Image https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2 */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-70"
           style={{
-            backgroundImage: 'url("https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")'
+            backgroundImage: 'url("/hero-section1.png")'
           }}
         />
         
@@ -43,7 +43,7 @@ export function HeroSection() {
           <div className="max-w-5xl mx-auto w-full">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
               Room-by-room & whole-home property management
-              <span className="block text-[#FF5A5F]">built for NZ</span>
+              <span className="block text-[#06b6d4]">built for NZ</span>
             </h1>
                       
             <p className="text-lg md:text-xl lg:text-2xl text-gray-200 mb-8 font-light">
@@ -59,13 +59,13 @@ export function HeroSection() {
                     placeholder="Where do you want to live?"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="pl-12 py-3 md:py-4 text-base md:text-lg border-0 focus:ring-2 focus:ring-[#FF5A5F] rounded-xl"
+                    className="pl-12 py-3 md:py-4 text-base md:text-lg border-0 focus:ring-2 focus:ring-[#504746] rounded-xl"
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
                 <Button
                   onClick={handleSearch}
-                  className="bg-[#FF5A5F] hover:bg-[#E8474B] text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl flex items-center gap-2"
+                  className="bg-[#504746] hover:bg-[#06b6d4] text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold rounded-xl flex items-center gap-2"
                 >
                   <Search className="h-5 w-5" />
                   Search Properties
@@ -81,7 +81,7 @@ export function HeroSection() {
                       params.set('location', city)
                       window.location.href = `/search?${params.toString()}`
                     }}
-                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-gray-600 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-full transition-colors"
+                    className="px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm text-gray-600 hover:text-[#504746] hover:bg-gray-50 rounded-full transition-colors"
                   >
                     {city}
                   </button>
@@ -95,7 +95,7 @@ export function HeroSection() {
               <div className="flex justify-center">
                 <Button
                   onClick={handleTradeMeClick}
-                  className="bg-[#FF5A5F] hover:bg-[#E8474B] text-white px-6 md:px-12 py-4 md:py-6 rounded-full text-lg md:text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 md:gap-4"
+                  className="bg-[#504746] hover:bg-[#06b6d4] text-white px-6 md:px-12 py-4 md:py-6 rounded-full text-lg md:text-xl font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3 md:gap-4"
                 >
                   {/* Trade Me Logo */}
                   <img 
@@ -200,10 +200,10 @@ export function HeroSection() {
               </defs>
               
               {/* Decorative dots for major cities */}
-              <circle cx="640" cy="280" r="4" fill="#FF5A5F" opacity="0.8"/> {/* Auckland */}
-              <circle cx="620" cy="380" r="3" fill="#FF5A5F" opacity="0.8"/> {/* Wellington */}
-              <circle cx="650" cy="580" r="3" fill="#FF5A5F" opacity="0.8"/> {/* Christchurch */}
-              <circle cx="580" cy="320" r="2" fill="#FF5A5F" opacity="0.8"/> {/* Hamilton */}
+              <circle cx="640" cy="280" r="4" fill="#504746" opacity="0.8"/> {/* Auckland */}
+              <circle cx="620" cy="380" r="3" fill="#504746" opacity="0.8"/> {/* Wellington */}
+              <circle cx="650" cy="580" r="3" fill="#504746" opacity="0.8"/> {/* Christchurch */}
+              <circle cx="580" cy="320" r="2" fill="#504746" opacity="0.8"/> {/* Hamilton */}
             </svg>
           </div>
           
@@ -219,19 +219,19 @@ export function HeroSection() {
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#FF5A5F] mb-2">1,200+</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">1,200+</div>
                 <div className="text-sm text-gray-600">Properties Listed</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#FF5A5F] mb-2">15+</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">15+</div>
                 <div className="text-sm text-gray-600">Cities Covered</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#FF5A5F] mb-2">98%</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">98%</div>
                 <div className="text-sm text-gray-600">Satisfaction Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#FF5A5F] mb-2">24/7</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">24/7</div>
                 <div className="text-sm text-gray-600">AI Support</div>
               </div>
             </div>

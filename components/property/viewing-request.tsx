@@ -160,7 +160,7 @@ export default function ViewingRequest({
           <div className="flex flex-col gap-3">
             <Button 
               onClick={() => setSuccess(false)}
-              className="bg-[#FF5A5F] hover:bg-[#E8474B]"
+              className="bg-[#504746] hover:bg-[#06b6d4]"
             >
               Request Another Viewing
             </Button>
@@ -179,7 +179,7 @@ export default function ViewingRequest({
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center text-xl">
-          <Calendar className="h-6 w-6 mr-3 text-[#FF5A5F]" />
+          <Calendar className="h-6 w-6 mr-3 text-[#504746]" />
           Request Property Viewing
         </CardTitle>
         <div className="bg-gray-50 rounded-lg p-4 mt-4">
@@ -285,7 +285,7 @@ export default function ViewingRequest({
                   onChange={handleInputChange}
                   required
                   disabled={loading}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746] disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Select time</option>
                   <option value="09:00">9:00 AM</option>
@@ -321,7 +321,7 @@ export default function ViewingRequest({
                   value={formData.alternativeTime}
                   onChange={handleInputChange}
                   disabled={loading}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746] disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">Select time</option>
                   <option value="09:00">9:00 AM</option>
@@ -380,7 +380,7 @@ export default function ViewingRequest({
             )}
             <Button 
               type="submit" 
-              className="flex-1 bg-[#FF5A5F] hover:bg-[#E8474B] disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="flex-1 bg-[#504746] hover:bg-[#06b6d4] disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={loading}
             >
               {loading ? (

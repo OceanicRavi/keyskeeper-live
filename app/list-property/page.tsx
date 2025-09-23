@@ -466,13 +466,13 @@ export default function PropertyListingForm() {
             {[1, 2, 3].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
+                  step >= stepNumber ? 'bg-[#504746] text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   {stepNumber}
                 </div>
                 {stepNumber < 3 && (
                   <div className={`w-16 h-1 mx-2 ${
-                    step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
+                    step > stepNumber ? 'bg-[#504746]' : 'bg-gray-200'
                   }`} />
                 )}
               </div>
@@ -593,7 +593,7 @@ export default function PropertyListingForm() {
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                     >
                       <option value="Auckland">Auckland</option>
                       <option value="Wellington">Wellington</option>
@@ -627,7 +627,7 @@ export default function PropertyListingForm() {
                     name="property_type"
                     value={formData.property_type}
                     onChange={handleInputChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                   >
                     <option value="apartment">Apartment</option>
                     <option value="house">House</option>
@@ -684,7 +684,7 @@ export default function PropertyListingForm() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={nextStep} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                  <Button type="button" onClick={nextStep} className="bg-[#504746] hover:bg-[#06b6d4]">
                     Continue
                   </Button>
                 </div>
@@ -829,7 +829,7 @@ export default function PropertyListingForm() {
                         onClick={() => handleAmenityToggle(amenity)}
                         className={`p-2 border rounded-lg cursor-pointer text-center text-sm transition-colors ${
                           formData.amenities.includes(amenity)
-                            ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
+                            ? 'border-[#504746] bg-[#504746] text-white'
                             : 'border-gray-300 hover:border-gray-400'
                         }`}
                       >
@@ -843,7 +843,7 @@ export default function PropertyListingForm() {
                   <Button type="button" variant="outline" onClick={prevStep}>
                     Back
                   </Button>
-                  <Button type="button" onClick={nextStep} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                  <Button type="button" onClick={nextStep} className="bg-[#504746] hover:bg-[#06b6d4]">
                     Continue
                   </Button>
                 </div>
@@ -870,7 +870,7 @@ export default function PropertyListingForm() {
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <div className="text-sm text-gray-600 mb-4">
                         <label htmlFor="image-upload" className="cursor-pointer">
-                          <span className="text-[#FF5A5F] hover:text-[#E8474B] font-medium">
+                          <span className="text-[#504746] hover:text-[#06b6d4] font-medium">
                             Click to upload
                           </span>{' '}
                           or drag and drop
@@ -969,7 +969,7 @@ export default function PropertyListingForm() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Weekly Rent:</span>
-                      <span className="font-medium text-[#FF5A5F]">${formData.price_per_week || 0}</span>
+                      <span className="font-medium text-[#504746]">${formData.price_per_week || 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Available From:</span>
@@ -1003,7 +1003,7 @@ export default function PropertyListingForm() {
                   <Button 
                     type="submit" 
                     disabled={loading || isUploading}
-                    className="bg-[#FF5A5F] hover:bg-[#E8474B] disabled:opacity-50"
+                    className="bg-[#504746] hover:bg-[#06b6d4] disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="flex items-center">

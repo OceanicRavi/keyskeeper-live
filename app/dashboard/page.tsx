@@ -222,7 +222,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5A5F] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#504746] mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -267,7 +267,7 @@ export default function DashboardPage() {
               <p className="text-gray-600">Welcome back, {user.full_name || user.email}</p>
             </div>
             <Link href="/list-property">
-              <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+              <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Property
               </Button>
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                   <Home className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 mb-4">No properties listed yet</p>
                   <Link href="/list-property">
-                    <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                    <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                       <Plus className="h-4 w-4 mr-2" />
                       List Your First Property
                     </Button>
@@ -429,7 +429,7 @@ export default function DashboardPage() {
               <p className="text-gray-600">Welcome back, {user.full_name || user.email}</p>
             </div>
             <Link href="/search">
-              <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+              <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                 <Search className="h-4 w-4 mr-2" />
                 Browse Properties
               </Button>
@@ -489,7 +489,7 @@ export default function DashboardPage() {
                       <h4 className="font-semibold text-gray-900 mb-2">{property.title}</h4>
                       <p className="text-gray-600 text-sm mb-2">{property.suburb}, {property.city}</p>
                       <div className="flex justify-between items-center">
-                        <span className="font-bold text-[#FF5A5F]">${property.price_per_week}/week</span>
+                        <span className="font-bold text-[#504746]">${property.price_per_week}/week</span>
                         <Link href={`/properties/${property.id}`}>
                           <Button size="sm">View Details</Button>
                         </Link>

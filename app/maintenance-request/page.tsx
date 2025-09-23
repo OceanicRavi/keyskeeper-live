@@ -151,7 +151,7 @@ export default function MaintenanceRequestPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/">
-                  <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                  <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                     Back to Home
                   </Button>
                 </Link>
@@ -240,7 +240,7 @@ export default function MaintenanceRequestPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl">
-              <Wrench className="h-6 w-6 mr-3 text-[#FF5A5F]" />
+              <Wrench className="h-6 w-6 mr-3 text-[#504746]" />
               Submit Maintenance Request
             </CardTitle>
           </CardHeader>
@@ -332,7 +332,7 @@ export default function MaintenanceRequestPage() {
                         name="category"
                         value={formData.category}
                         onChange={handleInputChange}
-                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                         required
                       >
                         <option value="general">General Maintenance</option>
@@ -355,7 +355,7 @@ export default function MaintenanceRequestPage() {
                         name="priority"
                         value={formData.priority}
                         onChange={handleInputChange}
-                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                         required
                       >
                         <option value="low">Low - Can wait a week</option>
@@ -373,7 +373,7 @@ export default function MaintenanceRequestPage() {
                       name="isEmergency"
                       checked={formData.isEmergency}
                       onChange={handleInputChange}
-                      className="rounded border-gray-300 text-[#FF5A5F] focus:ring-[#FF5A5F]"
+                      className="rounded border-gray-300 text-[#504746] focus:ring-[#504746]"
                     />
                     <Label htmlFor="isEmergency" className="text-sm font-medium text-red-600">
                       This is an emergency (safety hazard, flooding, no power/heat)
@@ -403,7 +403,7 @@ export default function MaintenanceRequestPage() {
                         <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                         <div className="text-sm text-gray-600 mb-4">
                           <label htmlFor="image-upload" className="cursor-pointer">
-                            <span className="text-[#FF5A5F] hover:text-[#E8474B] font-medium">
+                            <span className="text-[#504746] hover:text-[#06b6d4] font-medium">
                               Click to upload
                             </span>{' '}
                             or drag and drop
@@ -458,7 +458,7 @@ export default function MaintenanceRequestPage() {
                       name="preferredContactTime"
                       value={formData.preferredContactTime}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                     >
                       <option value="anytime">Anytime</option>
                       <option value="morning">Morning (8am - 12pm)</option>
@@ -520,7 +520,7 @@ export default function MaintenanceRequestPage() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] py-4 text-lg font-semibold"
+                className="w-full bg-[#504746] hover:bg-[#06b6d4] py-4 text-lg font-semibold"
                 disabled={loading}
               >
                 {loading ? 'Submitting Request...' : 'Submit Maintenance Request'}
@@ -542,14 +542,14 @@ export default function MaintenanceRequestPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="mailto:admin@keyskeeper.co.nz"
-              className="flex items-center justify-center gap-2 text-[#FF5A5F] hover:text-[#E8474B] font-medium"
+              className="flex items-center justify-center gap-2 text-[#504746] hover:text-[#06b6d4] font-medium"
             >
               <Mail className="h-5 w-5" />
               admin@keyskeeper.co.nz
             </a>
             <a
               href="tel:+64277771486"
-              className="flex items-center justify-center gap-2 text-[#FF5A5F] hover:text-[#E8474B] font-medium"
+              className="flex items-center justify-center gap-2 text-[#504746] hover:text-[#06b6d4] font-medium"
             >
               <Phone className="h-5 w-5" />
               +64 27 777 1486 (Emergency Line)

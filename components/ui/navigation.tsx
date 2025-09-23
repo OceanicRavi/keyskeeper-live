@@ -193,8 +193,8 @@ export function TopNavigation() {
               height={70}
               className="h-14 w-auto"
             />
-            <span className="text-3xl font-bold text-gray-700 drop-shadow-lg hover:text-[#FF5A5F] transition-colors duration-300">
-              <span style={{ color: '#FF5A5F' }}>K</span>eys<span style={{ color: '#FF5A5F' }}>K</span>eeper
+            <span className="text-3xl font-bold text-gray-700 drop-shadow-lg hover:text-[#504746] transition-colors duration-300">
+              <span style={{ color: '#504746' }}>K</span>eys<span style={{ color: '#504746' }}>K</span>eeper
             </span>
           </Link>
 
@@ -292,12 +292,12 @@ export function TopNavigation() {
             ) : (
               <div className="flex items-center space-x-3">
                 <Link href="/auth/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#FF5A5F]">
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#504746]">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button className="bg-[#FF5A5F] hover:bg-[#E8474B] text-white">
+                  <Button className="bg-[#504746] hover:bg-[#06b6d4] text-white">
                     Get Started
                   </Button>
                 </Link>
@@ -309,7 +309,7 @@ export function TopNavigation() {
           <div className="md:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50"
+              className="p-2 rounded-md text-gray-700 hover:text-[#504746] hover:bg-gray-50"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -343,7 +343,7 @@ export function TopNavigation() {
               <Link
                 href="/search"
                 onClick={closeMenus}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
               >
                 Browse Properties
               </Link>
@@ -352,7 +352,7 @@ export function TopNavigation() {
               <Link
                 href="/landlord"
                 onClick={closeMenus}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
               >
                 For Landlords
               </Link>
@@ -361,7 +361,7 @@ export function TopNavigation() {
               <Link
                 href="/tenant"
                 onClick={closeMenus}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
               >
                 For Tenants
               </Link>
@@ -369,7 +369,7 @@ export function TopNavigation() {
               <Link
                 href="/property-appraisal"
                 onClick={closeMenus}
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
               >
                 Free Appraisal
               </Link>
@@ -379,7 +379,7 @@ export function TopNavigation() {
                   <Link
                     href={getDashboardPath(user.role)}
                     onClick={closeMenus}
-                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
                   >
                     <BarChart3 className="h-5 w-5 mr-3" />
                     Dashboard
@@ -389,7 +389,7 @@ export function TopNavigation() {
                     <Link
                       href="/list-property"
                       onClick={closeMenus}
-                      className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                      className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
                     >
                       <Plus className="h-5 w-5 mr-3" />
                       List Property
@@ -400,7 +400,7 @@ export function TopNavigation() {
                     <Link
                       href="/admin/users"
                       onClick={closeMenus}
-                      className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#FF5A5F] hover:bg-gray-50 rounded-md"
+                      className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-[#504746] hover:bg-gray-50 rounded-md"
                     >
                       <Users className="h-5 w-5 mr-3" />
                       Manage Users
@@ -418,12 +418,12 @@ export function TopNavigation() {
               ) : (
                 <div className="border-t border-gray-100 pt-3 mt-3 space-y-2">
                   <Link href="/auth/login" onClick={closeMenus}>
-                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-[#FF5A5F]">
+                    <Button variant="ghost" className="w-full justify-start text-gray-700 hover:text-[#504746]">
                       Sign In
                     </Button>
                   </Link>
                   <Link href="/auth/signup" onClick={closeMenus}>
-                    <Button className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] text-white">
+                    <Button className="w-full bg-[#504746] hover:bg-[#06b6d4] text-white">
                       Get Started
                     </Button>
                   </Link>
@@ -532,8 +532,8 @@ export function BottomNavigation() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center space-y-1 transition-colors ${item.active
-                  ? 'text-[#FF5A5F] bg-red-50'
-                  : 'text-gray-600 hover:text-[#FF5A5F] hover:bg-gray-50'
+                  ? 'text-[#504746] bg-red-50'
+                  : 'text-gray-600 hover:text-[#504746] hover:bg-gray-50'
                 }`}
             >
               <Icon className="h-5 w-5" />

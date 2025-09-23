@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
         <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #FF5A5F; font-size: 28px; margin: 0;">New Maintenance Request</h1>
+            <h1 style="color: #504746; font-size: 28px; margin: 0;">New Maintenance Request</h1>
             <p style="color: #6b7280; margin: 10px 0 0 0;">Submitted via Keyskeeper website</p>
             ${data.isEmergency ? `
               <div style="background-color: #fef2f2; border: 2px solid #dc2626; border-radius: 6px; padding: 15px; margin-top: 15px;">
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
           </div>
 
           <div style="margin-bottom: 25px;">
-            <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #FF5A5F; padding-bottom: 5px;">Issue Summary</h2>
+            <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #504746; padding-bottom: 5px;">Issue Summary</h2>
             <div style="background-color: #f3f4f6; padding: 20px; border-radius: 6px; margin-bottom: 15px;">
               <h3 style="color: #374151; font-size: 18px; margin: 0 0 10px 0;">${data.issueTitle}</h3>
               <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
           </div>
 
           <div style="margin-bottom: 25px;">
-            <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #FF5A5F; padding-bottom: 5px;">Tenant Information</h2>
+            <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #504746; padding-bottom: 5px;">Tenant Information</h2>
             <table style="width: 100%; border-collapse: collapse;">
               <tr>
                 <td style="padding: 8px 0; color: #6b7280; font-weight: 600; width: 40%;">Name:</td>
@@ -116,14 +116,14 @@ export async function POST(request: NextRequest) {
 
           ${data.additionalNotes ? `
             <div style="margin-bottom: 25px;">
-              <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #FF5A5F; padding-bottom: 5px;">Additional Notes</h2>
+              <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #504746; padding-bottom: 5px;">Additional Notes</h2>
               <p style="color: #374151; background-color: #f9fafb; padding: 15px; border-radius: 6px; line-height: 1.6; margin: 0;">${data.additionalNotes}</p>
             </div>
           ` : ''}
 
           ${imageFiles.length > 0 ? `
             <div style="margin-bottom: 25px;">
-              <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #FF5A5F; padding-bottom: 5px;">Attached Images</h2>
+              <h2 style="color: #374151; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #504746; padding-bottom: 5px;">Attached Images</h2>
               <p style="color: #6b7280; margin: 0;">${imageFiles.length} image(s) uploaded: ${imageFiles.join(', ')}</p>
               <p style="color: #6b7280; font-size: 12px; margin: 5px 0 0 0;">Note: Image attachments are not yet implemented in the email system.</p>
             </div>

@@ -356,7 +356,7 @@ export default function AddressAutocomplete({
         {/* Status icons */}
         <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
           {loading && (
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#FF5A5F]"></div>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#504746]"></div>
           )}
           
           {isVerified && !loading && (

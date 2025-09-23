@@ -85,7 +85,7 @@ export function FeaturedListings() {
           <Link href="/search">
             <Button 
               variant="outline" 
-              className="border-[#FF5A5F] text-[#FF5A5F] hover:bg-[#FF5A5F] hover:text-white px-8 py-3"
+              className="border-[#504746] text-[#504746] hover:bg-[#504746] hover:text-white px-8 py-3"
             >
               View All Properties
             </Button>
@@ -123,7 +123,7 @@ function PropertyCard({ property }: { property: Property }) {
           >
             <Heart 
               size={16} 
-              className={isFavorite ? 'fill-[#FF5A5F] text-[#FF5A5F]' : 'text-gray-600'} 
+              className={isFavorite ? 'fill-[#504746] text-[#504746]' : 'text-gray-600'} 
             />
           </button>
         </div>
@@ -140,7 +140,7 @@ function PropertyCard({ property }: { property: Property }) {
               </div>
             </div>
             <div className="flex items-center ml-2">
-              <Star size={14} className="text-[#FF5A5F] fill-current" />
+              <Star size={14} className="text-[#504746] fill-current" />
               <span className="text-sm font-medium ml-1">4.8</span>
             </div>
           </div>

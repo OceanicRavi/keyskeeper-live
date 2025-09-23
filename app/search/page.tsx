@@ -279,9 +279,9 @@ export default function SearchPageWithMap() {
           icon: {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
               <svg width="50" height="60" viewBox="0 0 50 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M25 0C11.193 0 0 11.193 0 25c0 25 25 35 25 35s25-10 25-35c0-13.807-11.193-25-25-25z" fill="#FF5A5F"/>
+                <path d="M25 0C11.193 0 0 11.193 0 25c0 25 25 35 25 35s25-10 25-35c0-13.807-11.193-25-25-25z" fill="#504746"/>
                 <circle cx="25" cy="25" r="12" fill="white"/>
-                <text x="25" y="29" text-anchor="middle" fill="#FF5A5F" font-size="8" font-weight="bold">$${Math.round(property.price_per_week)}</text>
+                <text x="25" y="29" text-anchor="middle" fill="#504746" font-size="8" font-weight="bold">$${Math.round(property.price_per_week)}</text>
               </svg>
             `),
             scaledSize: new window.google.maps.Size(50, 60),
@@ -296,14 +296,14 @@ export default function SearchPageWithMap() {
               <div style="padding: 16px; min-width: 280px; font-family: Inter, sans-serif;">
                 <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #111827;">${property.title}</h3>
                 <p style="margin: 0 0 4px 0; color: #6b7280; font-size: 14px;">${property.suburb}, ${property.city}</p>
-                <p style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #FF5A5F;">${formatPrice(property.price_per_week)}/week</p>
+                <p style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #504746;">${formatPrice(property.price_per_week)}/week</p>
                 <div style="margin: 8px 0; display: flex; gap: 8px;">
                   <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;">${property.bedrooms} bed</span>
                   <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500;">${property.bathrooms} bath</span>
                   <span style="background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 500; text-transform: capitalize;">${property.property_type}</span>
                 </div>
                 ${property.distance ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280;">📍 ${(property.distance / 1000).toFixed(1)}km away</p>` : ''}
-                <a href="/properties/${property.id}" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: #FF5A5F; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; transition: background-color 0.2s;">View Details</a>
+                <a href="/properties/${property.id}" style="display: inline-block; margin-top: 12px; padding: 8px 16px; background: #504746; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; transition: background-color 0.2s;">View Details</a>
               </div>
             `
           })
@@ -452,7 +452,7 @@ export default function SearchPageWithMap() {
                 <Sliders className="h-4 w-4 mr-2" />
                 Filters
                 {activeFiltersCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-[#FF5A5F] text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                  <Badge className="absolute -top-2 -right-2 bg-[#504746] text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
                     {activeFiltersCount}
                   </Badge>
                 )}
@@ -460,7 +460,7 @@ export default function SearchPageWithMap() {
               
               <Button
                 onClick={fetchProperties}
-                className="bg-[#FF5A5F] hover:bg-[#E8474B] px-8 py-3"
+                className="bg-[#504746] hover:bg-[#06b6d4] px-8 py-3"
               >
                 <Search className="h-4 w-4 mr-2" />
                 Search
@@ -511,7 +511,7 @@ export default function SearchPageWithMap() {
                   variant="ghost"
                   size="sm"
                   onClick={clearFilters}
-                  className="text-[#FF5A5F] hover:text-[#E8474B] text-sm"
+                  className="text-[#504746] hover:text-[#06b6d4] text-sm"
                 >
                   Clear all
                 </Button>
@@ -554,7 +554,7 @@ export default function SearchPageWithMap() {
                       <select
                         value={filters.propertyType}
                         onChange={(e) => setFilters(prev => ({ ...prev, propertyType: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#504746] focus:border-[#504746]"
                       >
                         <option value="all">All Types</option>
                         <option value="house">House</option>
@@ -573,7 +573,7 @@ export default function SearchPageWithMap() {
                       <select
                         value={filters.bedrooms}
                         onChange={(e) => setFilters(prev => ({ ...prev, bedrooms: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-[#504746] focus:border-[#504746]"
                       >
                         <option value="any">Any</option>
                         <option value="1">1+ Bedroom</option>
@@ -643,7 +643,7 @@ export default function SearchPageWithMap() {
                     </Button>
                     <Button 
                       onClick={() => setShowFilters(false)}
-                      className="bg-[#FF5A5F] hover:bg-[#E8474B]"
+                      className="bg-[#504746] hover:bg-[#06b6d4]"
                     >
                       Apply Filters
                     </Button>
@@ -666,7 +666,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'grid' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={viewMode === 'grid' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
+                  className={viewMode === 'grid' ? 'bg-[#504746] hover:bg-[#06b6d4]' : ''}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
@@ -674,7 +674,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'list' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={viewMode === 'list' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
+                  className={viewMode === 'list' ? 'bg-[#504746] hover:bg-[#06b6d4]' : ''}
                 >
                   <List className="h-4 w-4" />
                 </Button>
@@ -682,7 +682,7 @@ export default function SearchPageWithMap() {
                   variant={viewMode === 'map' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setViewMode('map')}
-                  className={viewMode === 'map' ? 'bg-[#FF5A5F] hover:bg-[#E8474B]' : ''}
+                  className={viewMode === 'map' ? 'bg-[#504746] hover:bg-[#06b6d4]' : ''}
                 >
                   <MapPin className="h-4 w-4 mr-1" />
                   Map
@@ -713,7 +713,7 @@ export default function SearchPageWithMap() {
               {loading && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5A5F] mx-auto mb-2"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#504746] mx-auto mb-2"></div>
                     <p className="text-sm text-gray-600">Loading properties...</p>
                   </div>
                 </div>
@@ -810,7 +810,7 @@ export default function SearchPageWithMap() {
                     Try adjusting your search criteria or explore different locations across New Zealand.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button onClick={clearFilters} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                    <Button onClick={clearFilters} className="bg-[#504746] hover:bg-[#06b6d4]">
                       Clear All Filters
                     </Button>
                     <Button variant="outline" onClick={() => setFilters(prev => ({ ...prev, location: 'Auckland' }))}>
@@ -854,7 +854,7 @@ function PropertyMapCard({ property }: { property: PropertyWithDistance }) {
               {property.suburb}, {property.city}
             </p>
             <div className="flex items-center justify-between mb-1">
-              <span className="font-semibold text-sm text-[#FF5A5F]">
+              <span className="font-semibold text-sm text-[#504746]">
                 {formatPrice(property.price_per_week)}/wk
               </span>
               {property.distance && (
@@ -934,7 +934,7 @@ function PropertyCard({
                 >
                   <Heart
                     size={20}
-                    className={isFavorite ? 'fill-[#FF5A5F] text-[#FF5A5F]' : 'text-gray-400'}
+                    className={isFavorite ? 'fill-[#504746] text-[#504746]' : 'text-gray-400'}
                   />
                 </Button>
               </div>
@@ -947,7 +947,7 @@ function PropertyCard({
                   <span className="text-gray-500 ml-1">/ week</span>
                 </div>
                 <div className="flex items-center">
-                  <Star size={16} className="text-[#FF5A5F] fill-current mr-1" />
+                  <Star size={16} className="text-[#504746] fill-current mr-1" />
                   <span className="font-medium">4.8</span>
                 </div>
               </div>
@@ -1014,7 +1014,7 @@ function PropertyCard({
           >
             <Heart
               size={18}
-              className={isFavorite ? 'fill-[#FF5A5F] text-[#FF5A5F]' : 'text-gray-600'}
+              className={isFavorite ? 'fill-[#504746] text-[#504746]' : 'text-gray-600'}
             />
           </button>
 
@@ -1045,7 +1045,7 @@ function PropertyCard({
               </div>
             </div>
             <div className="flex items-center ml-2">
-              <Star size={14} className="text-[#FF5A5F] fill-current" />
+              <Star size={14} className="text-[#504746] fill-current" />
               <span className="text-sm font-medium ml-1">4.8</span>
             </div>
           </div>

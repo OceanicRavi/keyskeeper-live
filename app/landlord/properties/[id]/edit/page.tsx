@@ -603,7 +603,7 @@ export default function PropertyEditPage() {
                     name="city"
                     value={formData.city}
                     onChange={handleInputChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                     required
                   >
                     <option value="Auckland">Auckland</option>
@@ -646,7 +646,7 @@ export default function PropertyEditPage() {
                   name="property_type"
                   value={formData.property_type}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                 >
                   <option value="apartment">Apartment</option>
                   <option value="house">House</option>
@@ -850,7 +850,7 @@ export default function PropertyEditPage() {
                       key={amenity}
                       onClick={() => handleAmenityToggle(amenity)}
                       className={`p-2 border rounded-lg cursor-pointer text-center text-sm transition-colors ${formData.amenities.includes(amenity)
-                          ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
+                          ? 'border-[#504746] bg-[#504746] text-white'
                           : 'border-gray-300 hover:border-gray-400'
                         }`}
                     >
@@ -941,7 +941,7 @@ export default function PropertyEditPage() {
                   <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <div className="text-sm text-gray-600 mb-4">
                     <label htmlFor="image-upload" className="cursor-pointer">
-                      <span className="text-[#FF5A5F] hover:text-[#E8474B] font-medium">
+                      <span className="text-[#504746] hover:text-[#06b6d4] font-medium">
                         Click to upload
                       </span>{' '}
                       or drag and drop
@@ -977,7 +977,7 @@ export default function PropertyEditPage() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-[#FF5A5F] hover:bg-[#E8474B] flex-1 sm:flex-none"
+                className="bg-[#504746] hover:bg-[#06b6d4] flex-1 sm:flex-none"
               >
                 {saving ? (
                   <>

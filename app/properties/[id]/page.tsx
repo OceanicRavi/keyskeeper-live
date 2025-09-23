@@ -216,7 +216,7 @@ export default function PropertyDetailsPage() {
               onClick={() => setIsFavorite(!isFavorite)}
             >
               <Heart 
-                className={`h-4 w-4 ${isFavorite ? 'fill-[#FF5A5F] text-[#FF5A5F]' : ''}`} 
+                className={`h-4 w-4 ${isFavorite ? 'fill-[#504746] text-[#504746]' : ''}`} 
               />
             </Button>
           </div>
@@ -278,7 +278,7 @@ export default function PropertyDetailsPage() {
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
                       className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentImageIndex ? 'bg-[#FF5A5F]' : 'bg-gray-300'
+                        index === currentImageIndex ? 'bg-[#504746]' : 'bg-gray-300'
                       }`}
                     />
                   ))}
@@ -301,7 +301,7 @@ export default function PropertyDetailsPage() {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  <Star className="h-5 w-5 text-[#FF5A5F] fill-current mr-1" />
+                  <Star className="h-5 w-5 text-[#504746] fill-current mr-1" />
                   <span className="text-lg font-medium">4.8</span>
                   <span className="text-gray-500 ml-1 text-sm">(12 reviews)</span>
                 </div>
@@ -345,7 +345,7 @@ export default function PropertyDetailsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <Dialog open={showViewingDialog} onOpenChange={setShowViewingDialog}>
                   <DialogTrigger asChild>
-                    <Button className="bg-[#FF5A5F] hover:bg-[#E8474B] text-white">
+                    <Button className="bg-[#504746] hover:bg-[#06b6d4] text-white">
                       <Calendar className="h-4 w-4 mr-2" />
                       Book Viewing
                     </Button>
@@ -507,7 +507,7 @@ export default function PropertyDetailsPage() {
                   <div className="text-4xl font-bold text-gray-900 mb-2">4.8</div>
                   <div className="flex items-center justify-center mb-2">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-[#FF5A5F] fill-current" />
+                      <Star key={i} className="h-5 w-5 text-[#504746] fill-current" />
                     ))}
                   </div>
                   <div className="text-gray-600">Based on 12 reviews</div>
@@ -528,7 +528,7 @@ export default function PropertyDetailsPage() {
                             </div>
                             <div className="flex items-center mb-2">
                               {[...Array(review.rating)].map((_, i) => (
-                                <Star key={i} className="h-4 w-4 text-[#FF5A5F] fill-current" />
+                                <Star key={i} className="h-4 w-4 text-[#504746] fill-current" />
                               ))}
                             </div>
                             <p className="text-gray-700">{review.comment}</p>
@@ -548,14 +548,14 @@ export default function PropertyDetailsPage() {
                 <div className="space-y-3">
                   <a
                     href={`mailto:admin@keyskeeper.co.nz?subject=Inquiry about ${property.title}`}
-                    className="flex items-center text-[#FF5A5F] hover:text-[#E8474B] transition-colors"
+                    className="flex items-center text-[#504746] hover:text-[#06b6d4] transition-colors"
                   >
                     <Mail className="h-4 w-4 mr-3" />
                     <span>admin@keyskeeper.co.nz</span>
                   </a>
                   <a
                     href="tel:+64277771486"
-                    className="flex items-center text-[#FF5A5F] hover:text-[#E8474B] transition-colors"
+                    className="flex items-center text-[#504746] hover:text-[#06b6d4] transition-colors"
                   >
                     <Phone className="h-4 w-4 mr-3" />
                     <span>+64 27 777 1486</span>
@@ -616,7 +616,7 @@ export default function PropertyDetailsPage() {
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`relative aspect-square rounded-lg overflow-hidden ${
-                      index === currentImageIndex ? 'ring-2 ring-[#FF5A5F]' : ''
+                      index === currentImageIndex ? 'ring-2 ring-[#504746]' : ''
                     }`}
                   >
                     <img

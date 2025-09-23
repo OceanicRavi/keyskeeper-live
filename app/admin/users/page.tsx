@@ -267,7 +267,7 @@ export default function AdminUsersPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF5A5F] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#504746] mx-auto mb-4"></div>
           <p className="text-gray-600">Loading users...</p>
         </div>
       </div>
@@ -293,7 +293,7 @@ export default function AdminUsersPage() {
             
             <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
               <DialogTrigger asChild>
-                <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                   <Plus className="h-4 w-4 mr-2" />
                   Add User
                 </Button>
@@ -360,7 +360,7 @@ export default function AdminUsersPage() {
                     <Button type="button" variant="outline" onClick={() => setShowCreateUser(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit" disabled={loading} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                    <Button type="submit" disabled={loading} className="bg-[#504746] hover:bg-[#06b6d4]">
                       {loading ? 'Creating...' : 'Create User'}
                     </Button>
                   </div>
@@ -592,7 +592,7 @@ export default function AdminUsersPage() {
                 <Button type="button" variant="outline" onClick={() => setShowEditUser(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Button type="submit" disabled={loading} className="bg-[#504746] hover:bg-[#06b6d4]">
                   {loading ? 'Updating...' : 'Update User'}
                 </Button>
               </DialogFooter>

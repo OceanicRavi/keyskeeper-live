@@ -173,7 +173,7 @@ export default function SignupPage() {
 
                 <div className="space-y-4">
                   <Link href="/auth/login">
-                    <Button className="w-full bg-[#FF5A5F] hover:bg-[#E8474B]">
+                    <Button className="w-full bg-[#504746] hover:bg-[#06b6d4]">
                       Sign In to Existing Account
                     </Button>
                   </Link>
@@ -190,7 +190,7 @@ export default function SignupPage() {
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-500">
                     Forgot your password?{' '}
-                    <Link href="/auth/forgot-password" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                    <Link href="/auth/forgot-password" className="text-[#504746] hover:text-[#06b6d4]">
                       Reset it here
                     </Link>
                   </p>
@@ -270,7 +270,7 @@ export default function SignupPage() {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                   required
                 >
                   <option value="tenant">Tenant - Looking for rentals</option>
@@ -357,7 +357,7 @@ export default function SignupPage() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] text-white py-3"
+                className="w-full bg-[#504746] hover:bg-[#06b6d4] text-white py-3"
                 disabled={loading}
               >
                 {loading ? 'Creating account...' : 'Create account'}
@@ -386,11 +386,11 @@ export default function SignupPage() {
             <div className="mt-6">
               <p className="text-xs text-gray-500 text-center">
                 By creating an account, you agree to our{' '}
-                <Link href="/terms" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                <Link href="/terms" className="text-[#504746] hover:text-[#06b6d4]">
                   Terms of Service
                 </Link>{' '}
                 and{' '}
-                <Link href="/privacy" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                <Link href="/privacy" className="text-[#504746] hover:text-[#06b6d4]">
                   Privacy Policy
                 </Link>
               </p>
@@ -401,7 +401,7 @@ export default function SignupPage() {
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-600">
             Need help? Contact us at{' '}
-            <a href="mailto:admin@keyskeeper.co.nz" className="text-[#FF5A5F] hover:text-[#E8474B]">
+            <a href="mailto:admin@keyskeeper.co.nz" className="text-[#504746] hover:text-[#06b6d4]">
               admin@keyskeeper.co.nz
             </a>
           </p>

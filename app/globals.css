@@ -3,72 +3,73 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --foreground-rgb: 43, 39, 38; /* #2B2726 - deep espresso */
+  --background-start-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
+  --background-end-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --foreground-rgb: 245, 243, 242; /* #F5F3F2 - off-white */
+    --background-start-rgb: 43, 39, 38; /* #2B2726 - deep espresso */
+    --background-end-rgb: 80, 71, 70; /* #504746 - dark taupe */
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --background: 0 0% 96%; /* #F5F3F2 - off-white */
+    --foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --card: 0 0% 96%; /* #F5F3F2 - off-white */
+    --card-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --popover: 0 0% 96%; /* #F5F3F2 - off-white */
+    --popover-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --primary: 18 11% 31%; /* #504746 - dark taupe (main brand) */
+    --primary-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --secondary: 25 7% 87%; /* #E0DDDB - light warm gray */
+    --secondary-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --muted: 25 7% 87%; /* #E0DDDB - light warm gray */
+    --muted-foreground: 18 11% 31%; /* #504746 - dark taupe */
+    --accent: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --accent-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --destructive: 7 71% 57%; /* #D95C4D - earthy terracotta */
+    --destructive-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --border: 25 7% 87%; /* #E0DDDB - light warm gray */
+    --input: 25 7% 87%; /* #E0DDDB - light warm gray */
+    --ring: 18 11% 31%; /* #504746 - dark taupe */
+    --chart-1: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --chart-2: 200 44% 54%; /* #3B7EA1 - muted teal */
+    --chart-3: 18 11% 31%; /* #504746 - dark taupe */
+    --chart-4: 25 16% 48%; /* #8C756D - dusty mauve */
+    --chart-5: 7 71% 57%; /* #D95C4D - earthy terracotta */
     --radius: 0.5rem;
   }
+  
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 23 7% 17%; /* #2B2726 - deep espresso */
+    --foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --card: 18 11% 31%; /* #504746 - dark taupe */
+    --card-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --popover: 18 11% 31%; /* #504746 - dark taupe */
+    --popover-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --primary: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --primary-foreground: 23 7% 17%; /* #2B2726 - deep espresso */
+    --secondary: 18 11% 31%; /* #504746 - dark taupe */
+    --secondary-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --muted: 18 11% 31%; /* #504746 - dark taupe */
+    --muted-foreground: 25 7% 87%; /* #E0DDDB - light warm gray */
+    --accent: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --accent-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --destructive: 7 71% 57%; /* #D95C4D - earthy terracotta */
+    --destructive-foreground: 0 0% 96%; /* #F5F3F2 - off-white */
+    --border: 18 11% 31%; /* #504746 - dark taupe */
+    --input: 18 11% 31%; /* #504746 - dark taupe */
+    --ring: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --chart-1: 194 43% 51%; /* #4A9FB8 - warm cyan */
+    --chart-2: 200 44% 54%; /* #3B7EA1 - muted teal */
+    --chart-3: 25 16% 48%; /* #8C756D - dusty mauve */
+    --chart-4: 7 71% 57%; /* #D95C4D - earthy terracotta */
+    --chart-5: 0 0% 96%; /* #F5F3F2 - off-white */
   }
 }
 
@@ -110,34 +111,119 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #E0DDDB; /* Updated to light warm gray */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #8C756D; /* Updated to dusty mauve */
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: #504746; /* Updated to dark taupe */
 }
 
-/* Focus styles for accessibility */
+/* Focus styles for accessibility - Updated to warm cyan */
 .focus-visible\:ring-keyskeeper:focus-visible {
-  --tw-ring-color: #FF5A5F;
+  --tw-ring-color: #4A9FB8; /* Updated to warm cyan */
 }
 
-/* Keyskeeper brand colors */
+/* Updated brand colors */
 .text-keyskeeper {
-  color: #FF5A5F;
+  color: #504746; /* Primary brand color - dark taupe */
 }
 
 .bg-keyskeeper {
-  background-color: #FF5A5F;
+  background-color: #504746; /* Primary brand color - dark taupe */
 }
 
 .border-keyskeeper {
-  border-color: #FF5A5F;
+  border-color: #504746; /* Primary brand color - dark taupe */
+}
+
+/* Additional color utility classes for your new palette */
+.text-warm-cyan {
+  color: #4A9FB8;
+}
+
+.bg-warm-cyan {
+  background-color: #4A9FB8;
+}
+
+.border-warm-cyan {
+  border-color: #4A9FB8;
+}
+
+.text-dusty-mauve {
+  color: #8C756D;
+}
+
+.bg-dusty-mauve {
+  background-color: #8C756D;
+}
+
+.border-dusty-mauve {
+  border-color: #8C756D;
+}
+
+.text-muted-teal {
+  color: #3B7EA1;
+}
+
+.bg-muted-teal {
+  background-color: #3B7EA1;
+}
+
+.border-muted-teal {
+  border-color: #3B7EA1;
+}
+
+.text-terracotta {
+  color: #D95C4D;
+}
+
+.bg-terracotta {
+  background-color: #D95C4D;
+}
+
+.border-terracotta {
+  border-color: #D95C4D;
+}
+
+.text-off-white {
+  color: #F5F3F2;
+}
+
+.bg-off-white {
+  background-color: #F5F3F2;
+}
+
+.border-off-white {
+  border-color: #F5F3F2;
+}
+
+.text-warm-gray {
+  color: #E0DDDB;
+}
+
+.bg-warm-gray {
+  background-color: #E0DDDB;
+}
+
+.border-warm-gray {
+  border-color: #E0DDDB;
+}
+
+.text-deep-espresso {
+  color: #2B2726;
+}
+
+.bg-deep-espresso {
+  background-color: #2B2726;
+}
+
+.border-deep-espresso {
+  border-color: #2B2726;
 }
 
 /* Animation improvements */
@@ -167,14 +253,14 @@ html {
   }
 }
 
-/* High contrast for better visibility */
+/* High contrast for better visibility - Updated for new palette */
 @media (prefers-contrast: high) {
   .text-gray-500 {
-    color: #374151;
+    color: #504746; /* dark taupe */
   }
   
   .text-gray-600 {
-    color: #1f2937;
+    color: #2B2726; /* deep espresso */
   }
 }
 

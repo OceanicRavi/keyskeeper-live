@@ -4,7 +4,7 @@ import { ArrowRight, Home, Search, Mail, Phone, User } from 'lucide-react'
 
 export function CTASection() {
   return (
-    <section className="py-20 bg-gradient-to-r from-[#FF5A5F] to-[#E8474B]">
+    <section className="py-20 bg-gradient-to-r from-[#504746] to-[#06b6d4]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
           Ready to Get Started?
@@ -18,7 +18,7 @@ export function CTASection() {
           <Link href="/list-property">
             <Button
               size="lg"
-              className="bg-white text-[#FF5A5F] hover:bg-gray-50 px-8 py-4 text-lg font-semibold w-full sm:w-auto group"
+              className="bg-white text-[#504746] hover:bg-gray-50 px-8 py-4 text-lg font-semibold w-full sm:w-auto group"
             >
               <Home className="mr-2 h-5 w-5" />
               List My Property
@@ -30,7 +30,7 @@ export function CTASection() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-white text-white hover:bg-white hover:text-[#FF5A5F] px-8 py-4 text-lg font-semibold w-full sm:w-auto group bg-transparent"
+              className="border-2 border-white text-white hover:bg-white hover:text-[#504746] px-8 py-4 text-lg font-semibold w-full sm:w-auto group bg-transparent"
             >
               <Search className="mr-2 h-5 w-5" />
               Find a Room

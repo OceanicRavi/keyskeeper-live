@@ -136,7 +136,7 @@ export default function PropertyAppraisalPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/">
-                  <Button className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                  <Button className="bg-[#504746] hover:bg-[#06b6d4]">
                     Back to Home
                   </Button>
                 </Link>
@@ -225,7 +225,7 @@ export default function PropertyAppraisalPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center text-2xl">
-              <Home className="h-6 w-6 mr-3 text-[#FF5A5F]" />
+              <Home className="h-6 w-6 mr-3 text-[#504746]" />
               Property Appraisal Request
             </CardTitle>
           </CardHeader>
@@ -323,7 +323,7 @@ export default function PropertyAppraisalPage() {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                         required
                       >
                         <option value="Auckland">Auckland</option>
@@ -344,7 +344,7 @@ export default function PropertyAppraisalPage() {
                         name="propertyType"
                         value={formData.propertyType}
                         onChange={handleInputChange}
-                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                        className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                         required
                       >
                         <option value="house">House</option>
@@ -435,7 +435,7 @@ export default function PropertyAppraisalPage() {
                       name="reasonForAppraisal"
                       value={formData.reasonForAppraisal}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                       required
                     >
                       <option value="selling">Considering selling</option>
@@ -473,7 +473,7 @@ export default function PropertyAppraisalPage() {
                       name="preferredContactMethod"
                       value={formData.preferredContactMethod}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                     >
                       <option value="email">Email</option>
                       <option value="phone">Phone</option>
@@ -487,7 +487,7 @@ export default function PropertyAppraisalPage() {
                       name="preferredContactTime"
                       value={formData.preferredContactTime}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                     >
                       <option value="anytime">Anytime</option>
                       <option value="morning">Morning (9am - 12pm)</option>
@@ -523,7 +523,7 @@ export default function PropertyAppraisalPage() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] py-4 text-lg font-semibold"
+                className="w-full bg-[#504746] hover:bg-[#06b6d4] py-4 text-lg font-semibold"
                 disabled={loading}
               >
                 {loading ? 'Submitting Request...' : 'Get Free Appraisal'}
@@ -545,14 +545,14 @@ export default function PropertyAppraisalPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="mailto:admin@keyskeeper.co.nz"
-              className="flex items-center justify-center gap-2 text-[#FF5A5F] hover:text-[#E8474B] font-medium"
+              className="flex items-center justify-center gap-2 text-[#504746] hover:text-[#06b6d4] font-medium"
             >
               <Mail className="h-5 w-5" />
               admin@keyskeeper.co.nz
             </a>
             <a
               href="tel:+64277771486"
-              className="flex items-center justify-center gap-2 text-[#FF5A5F] hover:text-[#E8474B] font-medium"
+              className="flex items-center justify-center gap-2 text-[#504746] hover:text-[#06b6d4] font-medium"
             >
               <Phone className="h-5 w-5" />
               +64 27 777 1486

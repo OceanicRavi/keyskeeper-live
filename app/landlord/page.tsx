@@ -68,7 +68,7 @@ export default function LandlordPage() {
       <TopNavigation />
       
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#FF5A5F] to-[#E8474B] text-white py-20">
+      <section className="bg-gradient-to-br from-[#504746] to-[#06b6d4] text-white py-20">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center bg-white/20 rounded-full px-4 py-2 mb-6">
             <Home className="h-4 w-4 mr-2" />
@@ -87,7 +87,7 @@ export default function LandlordPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/signup?role=landlord">
-              <Button size="lg" className="bg-white text-[#FF5A5F] hover:bg-gray-50 px-8 py-4 text-lg font-semibold">
+              <Button size="lg" className="bg-white text-[#504746] hover:bg-gray-50 px-8 py-4 text-lg font-semibold">
                 Start Managing With Us
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -108,7 +108,7 @@ export default function LandlordPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-[#FF5A5F] mb-2">
+                <div className="text-3xl md:text-4xl font-bold text-[#504746] mb-2">
                   {stat.value}
                 </div>
                 <div className="text-sm font-medium text-gray-900 mb-1">
@@ -143,8 +143,8 @@ export default function LandlordPage() {
                 <Card key={index} className="h-full hover:shadow-xl transition-shadow duration-300">
                   <CardHeader className="pb-4">
                     <div className="flex items-center mb-4">
-                      <div className="p-3 bg-[#FF5A5F]/10 rounded-lg mr-4">
-                        <Icon className="h-6 w-6 text-[#FF5A5F]" />
+                      <div className="p-3 bg-[#504746]/10 rounded-lg mr-4">
+                        <Icon className="h-6 w-6 text-[#504746]" />
                       </div>
                       <CardTitle className="text-xl">{feature.title}</CardTitle>
                     </div>
@@ -184,7 +184,7 @@ export default function LandlordPage() {
           </div>
 
           <Card className="overflow-hidden shadow-2xl">
-            <div className="bg-gradient-to-r from-[#FF5A5F] to-[#E8474B] p-6">
+            <div className="bg-gradient-to-r from-[#504746] to-[#06b6d4] p-6">
               <div className="flex items-center justify-between text-white">
                 <div>
                   <h3 className="text-xl font-semibold">Landlord Dashboard</h3>
@@ -270,7 +270,7 @@ export default function LandlordPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/signup?role=landlord">
-              <Button size="lg" className="bg-[#FF5A5F] hover:bg-[#E8474B] px-8 py-4 text-lg font-semibold">
+              <Button size="lg" className="bg-[#504746] hover:bg-[#06b6d4] px-8 py-4 text-lg font-semibold">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

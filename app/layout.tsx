@@ -150,7 +150,7 @@ export default function RootLayout({
         
         {/* Viewport and mobile optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#FF5A5F" />
+        <meta name="theme-color" content="#504746" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Keyskeeper" />
@@ -164,7 +164,7 @@ export default function RootLayout({
         {/* Additional SEO meta tags */}
         <meta name="format-detection" content="telephone=yes" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-TileColor" content="#FF5A5F" />
+        <meta name="msapplication-TileColor" content="#504746" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
         
         {/* Structured data for local business */}

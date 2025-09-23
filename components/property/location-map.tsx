@@ -71,10 +71,10 @@ export default function PropertyLocationMap({ property }: LocationMapProps) {
           icon: {
             url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
               <svg width="40" height="50" viewBox="0 0 40 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 0C8.954 0 0 8.954 0 20c0 20 20 30 20 30s20-10 20-30c0-11.046-8.954-20-20-20z" fill="#FF5A5F"/>
+                <path d="M20 0C8.954 0 0 8.954 0 20c0 20 20 30 20 30s20-10 20-30c0-11.046-8.954-20-20-20z" fill="#504746"/>
                 <circle cx="20" cy="20" r="8" fill="white"/>
-                <path d="M16 18h8v4h-8z" fill="#FF5A5F"/>
-                <path d="M14 16h12v2h-12z" fill="#FF5A5F"/>
+                <path d="M16 18h8v4h-8z" fill="#504746"/>
+                <path d="M14 16h12v2h-12z" fill="#504746"/>
               </svg>
             `),
             scaledSize: new google.maps.Size(40, 50),
@@ -86,7 +86,7 @@ export default function PropertyLocationMap({ property }: LocationMapProps) {
         const infoWindow = new google.maps.InfoWindow({
           content: `
             <div style="padding: 12px; min-width: 250px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #FF5A5F;">${property.title}</h3>
+              <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #504746;">${property.title}</h3>
               <p style="margin: 0 0 8px 0; color: #666; font-size: 14px;">${property.address}</p>
               <p style="margin: 0; color: #666; font-size: 14px;">${property.suburb}, ${property.city}</p>
             </div>
@@ -355,7 +355,7 @@ export default function PropertyLocationMap({ property }: LocationMapProps) {
           {loading && (
             <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF5A5F] mx-auto mb-2"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#504746] mx-auto mb-2"></div>
                 <p className="text-sm text-gray-600">Loading map...</p>
               </div>
             </div>

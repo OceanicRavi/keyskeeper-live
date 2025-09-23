@@ -60,11 +60,11 @@ export function HowItWorksSection() {
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
-                    <div className="flex items-center justify-center w-8 h-8 bg-[#FF5A5F] text-white rounded-full text-sm font-bold mr-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-[#504746] text-white rounded-full text-sm font-bold mr-3">
                       {step.step}
                     </div>
-                    <div className="p-2 bg-[#FF5A5F]/10 rounded-lg">
-                      <Icon size={20} className="text-[#FF5A5F]" />
+                    <div className="p-2 bg-[#504746]/10 rounded-lg">
+                      <Icon size={20} className="text-[#504746]" />
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">

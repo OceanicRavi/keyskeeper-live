@@ -118,7 +118,7 @@ export function TestimonialsSection() {
                           <Star 
                             key={i} 
                             size={16} 
-                            className="text-[#FF5A5F] fill-current" 
+                            className="text-[#504746] fill-current" 
                           />
                         ))}
                       </div>
@@ -175,7 +175,7 @@ export function TestimonialsSection() {
                 key={index}
                 onClick={() => setCurrentIndex(index)}
                 className={`w-3 h-3 rounded-full transition-colors ${
-                  index === currentIndex ? 'bg-[#FF5A5F]' : 'bg-gray-300'
+                  index === currentIndex ? 'bg-[#504746]' : 'bg-gray-300'
                 }`}
               />
             ))}

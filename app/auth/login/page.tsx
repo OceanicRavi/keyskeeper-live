@@ -148,7 +148,7 @@ export default function LoginPage() {
                 <div className="space-y-4">
                   <Button
                     onClick={() => setShowEmailVerificationError(false)}
-                    className="w-full bg-[#FF5A5F] hover:bg-[#E8474B]"
+                    className="w-full bg-[#504746] hover:bg-[#06b6d4]"
                   >
                     Try Signing In Again
                   </Button>
@@ -197,7 +197,7 @@ export default function LoginPage() {
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <p className="text-sm text-gray-500">
                     Need help? Contact us at{' '}
-                    <a href="mailto:admin@keyskeeper.co.nz" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                    <a href="mailto:admin@keyskeeper.co.nz" className="text-[#504746] hover:text-[#06b6d4]">
                       admin@keyskeeper.co.nz
                     </a>
                   </p>
@@ -310,7 +310,7 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="text-sm">
-                    <Link href="/auth/forgot-password" className="text-[#FF5A5F] hover:text-[#E8474B]">
+                    <Link href="/auth/forgot-password" className="text-[#504746] hover:text-[#06b6d4]">
                       Forgot your password?
                     </Link>
                   </div>
@@ -318,7 +318,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] text-white py-3"
+                  className="w-full bg-[#504746] hover:bg-[#06b6d4] text-white py-3"
                   disabled={loading}
                 >
                   {loading ? 'Signing in...' : 'Sign in'}
@@ -349,7 +349,7 @@ export default function LoginPage() {
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
               Need help? Contact us at{' '}
-              <a href="mailto:admin@keyskeeper.co.nz" className="text-[#FF5A5F] hover:text-[#E8474B]">
+              <a href="mailto:admin@keyskeeper.co.nz" className="text-[#504746] hover:text-[#06b6d4]">
                 admin@keyskeeper.co.nz
               </a>
             </p>

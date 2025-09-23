@@ -130,7 +130,7 @@ export default function TenantPage() {
             {benefits.map((benefit, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-shadow">
                 <CardContent className="p-8">
-                  <div className="text-3xl font-bold text-[#FF5A5F] mb-2">
+                  <div className="text-3xl font-bold text-[#504746] mb-2">
                     {benefit.stat}
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -342,7 +342,7 @@ export default function TenantPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/search">
-              <Button size="lg" className="bg-[#FF5A5F] hover:bg-[#E8474B] px-8 py-4 text-lg font-semibold">
+              <Button size="lg" className="bg-[#504746] hover:bg-[#06b6d4] px-8 py-4 text-lg font-semibold">
                 <Search className="mr-2 h-5 w-5" />
                 Start Searching
                 <ArrowRight className="ml-2 h-5 w-5" />

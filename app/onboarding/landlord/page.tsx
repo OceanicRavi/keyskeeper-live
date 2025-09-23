@@ -152,7 +152,7 @@ export default function LandlordOnboardingPage() {
 
               <div className="space-y-4">
                 <Link href="/auth/login">
-                  <Button className="w-full bg-[#FF5A5F] hover:bg-[#E8474B] py-3 text-lg">
+                  <Button className="w-full bg-[#504746] hover:bg-[#06b6d4] py-3 text-lg">
                     Sign In to Your Account
                   </Button>
                 </Link>
@@ -164,7 +164,7 @@ export default function LandlordOnboardingPage() {
                       // In a real app, you'd trigger resend verification email
                       alert('Verification email resent!')
                     }}
-                    className="text-[#FF5A5F] hover:text-[#E8474B] underline"
+                    className="text-[#504746] hover:text-[#06b6d4] underline"
                   >
                     resend verification email
                   </button>
@@ -195,12 +195,12 @@ export default function LandlordOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= stepNumber ? 'bg-[#FF5A5F] text-white' : 'bg-gray-200 text-gray-600'
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= stepNumber ? 'bg-[#504746] text-white' : 'bg-gray-200 text-gray-600'
                   }`}>
                   {stepNumber}
                 </div>
                 {stepNumber < 4 && (
-                  <div className={`w-16 h-1 mx-2 ${step > stepNumber ? 'bg-[#FF5A5F]' : 'bg-gray-200'
+                  <div className={`w-16 h-1 mx-2 ${step > stepNumber ? 'bg-[#504746]' : 'bg-gray-200'
                     }`} />
                 )}
               </div>
@@ -249,7 +249,7 @@ export default function LandlordOnboardingPage() {
                   name="businessType"
                   value={data.businessType}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                 >
                   <option value="individual">Individual Investor</option>
                   <option value="company">Company/Trust</option>
@@ -271,7 +271,7 @@ export default function LandlordOnboardingPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={nextStep} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Button onClick={nextStep} className="bg-[#504746] hover:bg-[#06b6d4]">
                   Continue
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -297,7 +297,7 @@ export default function LandlordOnboardingPage() {
                   name="propertyCount"
                   value={data.propertyCount}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                 >
                   <option value="1">1 property</option>
                   <option value="2-5">2-5 properties</option>
@@ -314,7 +314,7 @@ export default function LandlordOnboardingPage() {
                   name="experience"
                   value={data.experience}
                   onChange={handleInputChange}
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FF5A5F] focus:border-[#FF5A5F]"
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
                 >
                   <option value="new">New to property management</option>
                   <option value="1-2years">1-2 years experience</option>
@@ -358,7 +358,7 @@ export default function LandlordOnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
-                <Button onClick={nextStep} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Button onClick={nextStep} className="bg-[#504746] hover:bg-[#06b6d4]">
                   Continue
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -394,7 +394,7 @@ export default function LandlordOnboardingPage() {
                       key={goal}
                       onClick={() => handleArrayToggle('goals', goal)}
                       className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.goals.includes(goal)
-                          ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
+                          ? 'border-[#504746] bg-[#504746] text-white'
                           : 'border-gray-300 hover:border-gray-400'
                         }`}
                     >
@@ -421,7 +421,7 @@ export default function LandlordOnboardingPage() {
                       key={channel}
                       onClick={() => handleArrayToggle('marketingChannels', channel)}
                       className={`p-3 border rounded-lg cursor-pointer text-sm transition-colors ${data.marketingChannels.includes(channel)
-                          ? 'border-[#FF5A5F] bg-[#FF5A5F] text-white'
+                          ? 'border-[#504746] bg-[#504746] text-white'
                           : 'border-gray-300 hover:border-gray-400'
                         }`}
                     >
@@ -436,7 +436,7 @@ export default function LandlordOnboardingPage() {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>
-                <Button onClick={nextStep} className="bg-[#FF5A5F] hover:bg-[#E8474B]">
+                <Button onClick={nextStep} className="bg-[#504746] hover:bg-[#06b6d4]">
                   Continue
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
@@ -498,7 +498,7 @@ export default function LandlordOnboardingPage() {
                 <Button
                   onClick={handleComplete}
                   disabled={loading}
-                  className="bg-[#FF5A5F] hover:bg-[#E8474B]"
+                  className="bg-[#504746] hover:bg-[#06b6d4]"
                 >
                   {loading ? 'Setting up...' : 'Complete Setup'}
                   <ArrowRight className="h-4 w-4 ml-2" />
