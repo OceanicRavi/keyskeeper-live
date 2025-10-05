@@ -1,7 +1,7 @@
 // app/list-property/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { TopNavigation } from '@/components/ui/navigation'
 import { supabase } from '@/lib/supabase'
-import { ArrowLeft, Upload, X, MapPin, Home, DollarSign, AlertCircle, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Upload, X, Home, DollarSign, AlertCircle, CheckCircle, Shield } from 'lucide-react'
 import Link from 'next/link'
 
 interface PropertyFormData {
@@ -23,8 +23,6 @@ interface PropertyFormData {
   suburb: string
   city: string
   postcode: string
-  latitude?: number
-  longitude?: number
   property_type: 'house' | 'apartment' | 'room' | 'studio' | 'townhouse'
   bedrooms: number
   bathrooms: number
@@ -38,6 +36,7 @@ interface PropertyFormData {
   smoking_allowed: boolean
   available_from: string
   amenities: string[]
+  compliance_status: 'compliant' | 'pending' | 'non_compliant'
 }
 
 const amenityOptions = [
@@ -45,33 +44,36 @@ const amenityOptions = [
   'Dishwasher', 'Air Conditioning', 'Heating', 'Security', 'Storage'
 ]
 
-// Helper function to generate unique filename
 const generateUniqueFileName = (file: File): string => {
   const timestamp = Date.now()
-  const random = Math.random().toString(36).substring(2)
-  const extension = file.name.split('.').pop()?.toLowerCase()
+  const random = Math.random().toString(36).substring(2, 15)
+  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   return `property-${timestamp}-${random}.${extension}`
 }
 
-// Helper function to validate file
 const validateImageFile = (file: File): { isValid: boolean; error?: string } => {
   const maxSize = 5 * 1024 * 1024 // 5MB
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
   
   if (!allowedTypes.includes(file.type)) {
-    return { isValid: false, error: `Invalid file type: ${file.type}. Only JPG, PNG, and WebP are allowed.` }
+    return { 
+      isValid: false, 
+      error: `${file.name}: Invalid file type. Only JPG, PNG, and WebP are allowed.` 
+    }
   }
   
   if (file.size > maxSize) {
-    return { isValid: false, error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum size is 5MB.` }
+    return { 
+      isValid: false, 
+      error: `${file.name}: File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 5MB.` 
+    }
   }
   
   return { isValid: true }
 }
 
-// Enhanced image upload function with proper error handling
-const uploadImageToSupabase = async (file: File, onProgress?: (progress: number) => void): Promise<string> => {
-  // Validate file first
+const uploadImageToSupabase = async (file: File): Promise<string> => {
+  // Validate file
   const validation = validateImageFile(file)
   if (!validation.isValid) {
     throw new Error(validation.error)
@@ -83,62 +85,62 @@ const uploadImageToSupabase = async (file: File, onProgress?: (progress: number)
   console.log(`Uploading ${file.name} as ${filePath} (${(file.size / 1024).toFixed(1)}KB)`)
   
   try {
-    // Upload file with progress tracking if supported
-    const uploadOptions = {
-      cacheControl: '31536000', // 1 year
-      upsert: false
-    }
-    
     const { data, error } = await supabase.storage
       .from('property-images')
-      .upload(filePath, file, uploadOptions)
+      .upload(filePath, file, {
+        cacheControl: '31536000',
+        upsert: false
+      })
     
     if (error) {
-      console.error('Upload error details:', error)
-      if (error.message.includes('The resource already exists')) {
-        // File already exists, try with new name
-        const newFileName = generateUniqueFileName(file)
-        const newFilePath = `property-images/${newFileName}`
+      console.error('Upload error:', error)
+      
+      // If file already exists (shouldn't happen with unique names, but handle it)
+      if (error.message.includes('already exists')) {
+        // Try again with a new unique name
+        const retryFileName = generateUniqueFileName(file)
+        const retryFilePath = `property-images/${retryFileName}`
+        
         const { data: retryData, error: retryError } = await supabase.storage
           .from('property-images')
-          .upload(newFilePath, file, uploadOptions)
+          .upload(retryFilePath, file, {
+            cacheControl: '31536000',
+            upsert: false
+          })
         
         if (retryError) {
-          throw new Error(`Upload failed: ${retryError.message}`)
+          throw new Error(`Upload failed after retry: ${retryError.message}`)
         }
         
-        // Get public URL for the new file
         const { data: { publicUrl } } = supabase.storage
           .from('property-images')
-          .getPublicUrl(newFilePath)
+          .getPublicUrl(retryFilePath)
         
-        console.log(`Successfully uploaded ${file.name} to ${newFilePath}`)
+        console.log(`Successfully uploaded ${file.name} (retry) to ${retryFilePath}`)
         return publicUrl
-      } else {
-        throw new Error(`Upload failed: ${error.message}`)
       }
+      
+      throw new Error(`Upload failed: ${error.message}`)
     }
     
-    // Get the public URL
+    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('property-images')
       .getPublicUrl(filePath)
     
-    console.log(`Successfully uploaded ${file.name} to ${filePath}`)
-    console.log(`Public URL: ${publicUrl}`)
-    
+    console.log(`Successfully uploaded ${file.name}: ${publicUrl}`)
     return publicUrl
-  } catch (error) {
+    
+  } catch (error: any) {
     console.error('Image upload error:', error)
-    throw error
+    throw new Error(`Failed to upload ${file.name}: ${error.message}`)
   }
 }
 
-// Simple progress bar component to replace the problematic one
-const SimpleProgressBar = ({ value, className = "" }: { value: number; className?: string }) => (
-  <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
+const SimpleProgressBar = ({ value }: { value: number }) => (
+  <div className="w-full bg-gray-200 rounded-full h-2">
     <div 
-      className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out" 
+      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
       style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
     />
   </div>
@@ -146,6 +148,10 @@ const SimpleProgressBar = ({ value, className = "" }: { value: number; className
 
 export default function PropertyListingForm() {
   const router = useRouter()
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [canAddProperty, setCanAddProperty] = useState(false)
+  
   const [formData, setFormData] = useState<PropertyFormData>({
     title: '',
     description: '',
@@ -165,41 +171,79 @@ export default function PropertyListingForm() {
     pets_allowed: false,
     smoking_allowed: false,
     available_from: new Date().toISOString().split('T')[0],
-    amenities: []
+    amenities: [],
+    compliance_status: 'pending'
   })
   
   const [loading, setLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const [step, setStep] = useState(1)
   const [imageFiles, setImageFiles] = useState<File[]>([])
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
   const [isUploading, setIsUploading] = useState(false)
-  const [individualProgress, setIndividualProgress] = useState<{ [key: string]: number }>({})
 
-  // Step validation function
+  useEffect(() => {
+    checkUserAccess()
+  }, [router])
+
+  const checkUserAccess = async () => {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      
+      if (!authUser) {
+        router.push('/auth/login')
+        return
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', authUser.id)
+        .single()
+
+      if (profileError || !profile) {
+        console.error('Profile error:', profileError)
+        router.push('/auth/login')
+        return
+      }
+
+      setCurrentUser(profile)
+      
+      // Both admin and landlord can add properties
+      const hasAccess = profile.role === 'admin' || profile.role === 'landlord'
+      setCanAddProperty(hasAccess)
+      setIsAdmin(profile.role === 'admin')
+      
+      if (!hasAccess) {
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.error('Error checking access:', error)
+      router.push('/auth/login')
+    }
+  }
+
   const validateStep = (stepNumber: number): { isValid: boolean; errors: string[] } => {
     const errors: string[] = []
     
     switch (stepNumber) {
-      case 1: // Property Details
+      case 1:
         if (!formData.title.trim()) errors.push('Property title is required')
         if (!formData.address.trim()) errors.push('Property address is required')
         if (!formData.suburb.trim()) errors.push('Suburb is required')
         if (!formData.city.trim()) errors.push('City is required')
         break
         
-      case 2: // Features & Pricing
+      case 2:
         if (!formData.price_per_week || formData.price_per_week <= 0) {
           errors.push('Weekly rent must be greater than $0')
         }
         if (!formData.available_from) errors.push('Available from date is required')
         break
         
-      case 3: // Photos & Review - no required fields
-        break
-        
-      default:
+      case 3:
+        // No required fields in step 3
         break
     }
     
@@ -227,16 +271,14 @@ export default function PropertyListingForm() {
     setFormData({ ...formData, amenities: updatedAmenities })
   }
 
-  // Enhanced image upload with validation
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     
-    if (files.length + imageFiles.length + uploadedImageUrls.length > 10) {
+    if (files.length + imageFiles.length > 10) {
       setError('Maximum 10 images allowed')
       return
     }
     
-    // Validate each file
     const invalidFiles: string[] = []
     const validFiles: File[] = []
     
@@ -245,82 +287,64 @@ export default function PropertyListingForm() {
       if (validation.isValid) {
         validFiles.push(file)
       } else {
-        invalidFiles.push(`${file.name}: ${validation.error}`)
+        invalidFiles.push(validation.error || '')
       }
     })
     
     if (invalidFiles.length > 0) {
-      setError(`Invalid files: ${invalidFiles.join(', ')}`)
+      setError(invalidFiles.join(' | '))
       return
     }
     
     if (validFiles.length > 0) {
       setImageFiles([...imageFiles, ...validFiles])
-      setError('') // Clear any previous errors
+      setError('')
     }
     
-    // Reset the input
     e.target.value = ''
   }
 
   const removeImage = (index: number) => {
-    const newImageFiles = imageFiles.filter((_, i) => i !== index)
-    setImageFiles(newImageFiles)
+    setImageFiles(imageFiles.filter((_, i) => i !== index))
   }
 
-  // Remove uploaded image (you might want to delete from storage too)
-  const removeUploadedImage = (index: number) => {
-    const newUploadedUrls = uploadedImageUrls.filter((_, i) => i !== index)
-    setUploadedImageUrls(newUploadedUrls)
-  }
-
-  // Upload all images with progress tracking
   const uploadAllImages = async (): Promise<string[]> => {
     if (imageFiles.length === 0) {
-      return uploadedImageUrls // Return already uploaded images
+      return []
     }
     
     setIsUploading(true)
     setUploadProgress(0)
-    const newUploadedUrls: string[] = [...uploadedImageUrls]
+    const uploadedUrls: string[] = []
     
     try {
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i]
-        const fileKey = `${file.name}-${i}`
-        
-        // Set individual progress
-        setIndividualProgress(prev => ({ ...prev, [fileKey]: 0 }))
         
         try {
-          const imageUrl = await uploadImageToSupabase(file, (progress) => {
-            setIndividualProgress(prev => ({ ...prev, [fileKey]: progress }))
-          })
+          console.log(`Uploading image ${i + 1}/${imageFiles.length}: ${file.name}`)
+          const imageUrl = await uploadImageToSupabase(file)
+          uploadedUrls.push(imageUrl)
           
-          newUploadedUrls.push(imageUrl)
+          const progress = Math.round(((i + 1) / imageFiles.length) * 100)
+          setUploadProgress(progress)
           
-          // Update overall progress
-          const overallProgress = Math.round(((i + 1) / imageFiles.length) * 100)
-          setUploadProgress(overallProgress)
-          
-          setIndividualProgress(prev => ({ ...prev, [fileKey]: 100 }))
-          
+          console.log(`Upload ${i + 1}/${imageFiles.length} complete`)
         } catch (uploadError: any) {
           console.error(`Failed to upload ${file.name}:`, uploadError)
           throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`)
         }
       }
       
-      setUploadedImageUrls(newUploadedUrls)
-      setImageFiles([]) // Clear the files array since they're now uploaded
-      return newUploadedUrls
+      console.log(`All ${uploadedUrls.length} images uploaded successfully`)
+      return uploadedUrls
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Batch upload failed:', error)
       throw error
     } finally {
       setIsUploading(false)
-      setIndividualProgress({})
+      setUploadProgress(0)
     }
   }
 
@@ -329,29 +353,33 @@ export default function PropertyListingForm() {
     
     if (!validation.isValid) {
       setError(validation.errors.join(', '))
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
     
     setError('')
     setStep(step + 1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   
   const prevStep = () => {
     setError('')
     setStep(step - 1)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate all steps before submission
+    // Validate all steps
     const step1Validation = validateStep(1)
     const step2Validation = validateStep(2)
     
     const allErrors = [...step1Validation.errors, ...step2Validation.errors]
     
     if (allErrors.length > 0) {
-      setError('Please fix the following issues: ' + allErrors.join(', '))
+      setError('Please fix the following: ' + allErrors.join(', '))
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
     
@@ -359,38 +387,54 @@ export default function PropertyListingForm() {
     setError('')
 
     try {
-      // Get current user
+      // Get authenticated user
       const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) throw new Error('Not authenticated')
+      if (!authUser) {
+        throw new Error('Not authenticated')
+      }
       
+      // Get user profile
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
-        .select('id')
+        .select('id, role')
         .eq('auth_id', authUser.id)
         .single()
       
       if (profileError || !userProfile) {
         throw new Error('User profile not found')
       }
+
+      // Check if user has permission
+      if (userProfile.role !== 'admin' && userProfile.role !== 'landlord') {
+        throw new Error('You do not have permission to add properties')
+      }
       
-      // Upload all images first
+      console.log('Starting property creation for user:', userProfile.id)
+      
+      // Upload images
       let finalImageUrls: string[] = []
       
-      if (imageFiles.length > 0 || uploadedImageUrls.length > 0) {
+      if (imageFiles.length > 0) {
+        console.log(`Uploading ${imageFiles.length} images...`)
         try {
           finalImageUrls = await uploadAllImages()
+          console.log(`Successfully uploaded ${finalImageUrls.length} images`)
         } catch (uploadError: any) {
+          console.error('Image upload error:', uploadError)
           throw new Error(`Image upload failed: ${uploadError.message}`)
         }
       }
       
-      // If no images were uploaded, use a default placeholder
+      // Use placeholder if no images uploaded
       if (finalImageUrls.length === 0) {
-        console.warn('No images uploaded, using placeholder')
+        console.log('No images uploaded, using placeholder')
         finalImageUrls = ['https://images.pexels.com/photos/280229/pexels-photo-280229.jpeg?auto=compress&cs=tinysrgb&w=800']
       }
       
-      // Create property data
+      // Determine compliance status
+      const complianceStatus = isAdmin ? formData.compliance_status : 'pending'
+      
+      // Prepare property data
       const propertyData = {
         title: formData.title,
         description: formData.description || null,
@@ -415,34 +459,76 @@ export default function PropertyListingForm() {
         images: finalImageUrls,
         landlord_id: userProfile.id,
         is_available: true,
-        compliance_status: 'pending' as const
+        compliance_status: complianceStatus
       }
 
       console.log('Creating property with data:', propertyData)
 
-      const { data, error } = await supabase
+      // Insert property
+      const { data, error: insertError } = await supabase
         .from('properties')
         .insert([propertyData])
         .select()
         .single()
 
-      if (error) {
-        console.error('Property creation error:', error)
-        throw error
+      if (insertError) {
+        console.error('Property creation error:', insertError)
+        throw new Error(`Database error: ${insertError.message}`)
       }
 
-      console.log('Property created successfully:', data)
+      if (!data) {
+        throw new Error('Property created but no data returned')
+      }
+
+      console.log('Property created successfully:', data.id)
       
-      // Success! Redirect to the property page
-      router.push(`/properties/${data.id}?success=listed`)
+      // Success! Redirect to property page
+      setSuccess(true)
+      setTimeout(() => {
+        router.push(`/properties/${data.id}?success=listed`)
+      }, 1500)
       
     } catch (error: any) {
       console.error('Error creating property:', error)
-      setError(error.message || 'Failed to create property listing')
+      setError(error.message || 'Failed to create property listing. Please try again.')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } finally {
       setLoading(false)
-      setUploadProgress(0)
     }
+  }
+
+  if (!canAddProperty) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#504746] mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking permissions...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <TopNavigation />
+        <div className="max-w-2xl mx-auto px-4 py-16">
+          <Card className="text-center">
+            <CardContent className="p-12">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                Property Listed Successfully!
+              </h1>
+              <p className="text-gray-600 mb-8">
+                Your property has been created. Redirecting to property page...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -458,6 +544,13 @@ export default function PropertyListingForm() {
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">List Your Property</h1>
           <p className="text-gray-600">Create a listing to find quality tenants</p>
+          
+          {isAdmin && (
+            <Badge className="mt-2 bg-purple-100 text-purple-800">
+              <Shield className="h-3 w-3 mr-1" />
+              Admin Mode
+            </Badge>
+          )}
         </div>
 
         {/* Progress indicator */}
@@ -492,15 +585,14 @@ export default function PropertyListingForm() {
           </Alert>
         )}
 
-        {/* Upload Progress */}
         {isUploading && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
             <CardContent className="p-4">
               <div className="flex items-center space-x-3">
-                <Upload className="h-5 w-5 text-blue-600" />
+                <Upload className="h-5 w-5 text-blue-600 animate-pulse" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-blue-900">Uploading images...</p>
-                  <SimpleProgressBar value={uploadProgress} className="mt-2" />
+                  <SimpleProgressBar value={uploadProgress} />
                   <p className="text-xs text-blue-700 mt-1">{uploadProgress}% complete</p>
                 </div>
               </div>
@@ -520,26 +612,20 @@ export default function PropertyListingForm() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">
-                    Property Title *
-                  </Label>
+                  <Label htmlFor="title">Property Title *</Label>
                   <Input
                     id="title"
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
                     placeholder="e.g., Modern 2BR Apartment in Auckland Central"
-                    className={`mt-1 ${!formData.title.trim() ? 'border-red-300' : ''}`}
+                    className="mt-1"
+                    required
                   />
-                  {!formData.title.trim() && (
-                    <p className="text-red-500 text-xs mt-1">Property title is required</p>
-                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                    Description
-                  </Label>
+                  <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
                     name="description"
@@ -552,48 +638,40 @@ export default function PropertyListingForm() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">
-                    Property Address *
-                  </Label>
+                  <Label htmlFor="address">Property Address *</Label>
                   <Input
+                    id="address"
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
                     placeholder="123 Queen Street"
-                    className={`${!formData.address.trim() ? 'border-red-300' : ''}`}
+                    className="mt-1"
+                    required
                   />
-                  {!formData.address.trim() && (
-                    <p className="text-red-500 text-xs mt-1">Property address is required</p>
-                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="suburb" className="text-sm font-medium text-gray-700">
-                      Suburb *
-                    </Label>
+                    <Label htmlFor="suburb">Suburb *</Label>
                     <Input
                       id="suburb"
                       name="suburb"
                       value={formData.suburb}
                       onChange={handleInputChange}
                       placeholder="Auckland Central"
-                      className={`mt-1 ${!formData.suburb.trim() ? 'border-red-300' : ''}`}
+                      className="mt-1"
+                      required
                     />
-                    {!formData.suburb.trim() && (
-                      <p className="text-red-500 text-xs mt-1">Suburb is required</p>
-                    )}
                   </div>
                   <div>
-                    <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                      City *
-                    </Label>
+                    <Label htmlFor="city">City *</Label>
                     <select
                       id="city"
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
+                      className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
+                      required
                     >
                       <option value="Auckland">Auckland</option>
                       <option value="Wellington">Wellington</option>
@@ -604,9 +682,7 @@ export default function PropertyListingForm() {
                     </select>
                   </div>
                   <div>
-                    <Label htmlFor="postcode" className="text-sm font-medium text-gray-700">
-                      Postcode
-                    </Label>
+                    <Label htmlFor="postcode">Postcode</Label>
                     <Input
                       id="postcode"
                       name="postcode"
@@ -619,15 +695,13 @@ export default function PropertyListingForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="property_type" className="text-sm font-medium text-gray-700">
-                    Property Type
-                  </Label>
+                  <Label htmlFor="property_type">Property Type</Label>
                   <select
                     id="property_type"
                     name="property_type"
                     value={formData.property_type}
                     onChange={handleInputChange}
-                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#504746] focus:border-[#504746]"
+                    className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
                     <option value="apartment">Apartment</option>
                     <option value="house">House</option>
@@ -639,9 +713,7 @@ export default function PropertyListingForm() {
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <Label htmlFor="bedrooms" className="text-sm font-medium text-gray-700">
-                      Bedrooms
-                    </Label>
+                    <Label htmlFor="bedrooms">Bedrooms</Label>
                     <Input
                       id="bedrooms"
                       name="bedrooms"
@@ -653,9 +725,7 @@ export default function PropertyListingForm() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="bathrooms" className="text-sm font-medium text-gray-700">
-                      Bathrooms
-                    </Label>
+                    <Label htmlFor="bathrooms">Bathrooms</Label>
                     <Input
                       id="bathrooms"
                       name="bathrooms"
@@ -668,9 +738,7 @@ export default function PropertyListingForm() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="parking_spaces" className="text-sm font-medium text-gray-700">
-                      Parking
-                    </Label>
+                    <Label htmlFor="parking_spaces">Parking</Label>
                     <Input
                       id="parking_spaces"
                       name="parking_spaces"
@@ -704,9 +772,7 @@ export default function PropertyListingForm() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price_per_week" className="text-sm font-medium text-gray-700">
-                      Weekly Rent (NZD) *
-                    </Label>
+                    <Label htmlFor="price_per_week">Weekly Rent (NZD) *</Label>
                     <Input
                       id="price_per_week"
                       name="price_per_week"
@@ -715,16 +781,12 @@ export default function PropertyListingForm() {
                       value={formData.price_per_week}
                       onChange={handleInputChange}
                       placeholder="500"
-                      className={`mt-1 ${formData.price_per_week <= 0 ? 'border-red-300' : ''}`}
+                      className="mt-1"
+                      required
                     />
-                    {formData.price_per_week <= 0 && (
-                      <p className="text-red-500 text-xs mt-1">Weekly rent must be greater than $0</p>
-                    )}
                   </div>
                   <div>
-                    <Label htmlFor="bond_amount" className="text-sm font-medium text-gray-700">
-                      Bond Amount (NZD)
-                    </Label>
+                    <Label htmlFor="bond_amount">Bond Amount (NZD)</Label>
                     <Input
                       id="bond_amount"
                       name="bond_amount"
@@ -739,31 +801,48 @@ export default function PropertyListingForm() {
                 </div>
 
                 <div>
-                  <Label htmlFor="available_from" className="text-sm font-medium text-gray-700">
-                    Available From *
-                  </Label>
+                  <Label htmlFor="available_from">Available From *</Label>
                   <Input
                     id="available_from"
                     name="available_from"
                     type="date"
                     value={formData.available_from}
                     onChange={handleInputChange}
-                    className={`mt-1 ${!formData.available_from ? 'border-red-300' : ''}`}
+                    className="mt-1"
+                    required
                   />
-                  {!formData.available_from && (
-                    <p className="text-red-500 text-xs mt-1">Available from date is required</p>
-                  )}
                 </div>
 
+                {/* Admin-only compliance status */}
+                {isAdmin && (
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <Label htmlFor="compliance_status" className="flex items-center mb-2">
+                      <Shield className="h-4 w-4 mr-2 text-purple-600" />
+                      Compliance Status (Admin Only)
+                    </Label>
+                    <select
+                      id="compliance_status"
+                      name="compliance_status"
+                      value={formData.compliance_status}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-purple-300 rounded-md"
+                    >
+                      <option value="pending">Pending Review</option>
+                      <option value="compliant">Compliant</option>
+                      <option value="non_compliant">Non-Compliant</option>
+                    </select>
+                    <p className="text-xs text-purple-700 mt-2">
+                      Set property compliance status for Healthy Homes standards
+                    </p>
+                  </div>
+                )}
+
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                    Property Features
-                  </Label>
+                  <Label className="mb-3 block">Property Features</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="is_furnished"
-                        name="is_furnished"
                         checked={formData.is_furnished}
                         onCheckedChange={(checked) => 
                           setFormData({ ...formData, is_furnished: !!checked })
@@ -774,7 +853,6 @@ export default function PropertyListingForm() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="utilities_included"
-                        name="utilities_included"
                         checked={formData.utilities_included}
                         onCheckedChange={(checked) => 
                           setFormData({ ...formData, utilities_included: !!checked })
@@ -785,7 +863,6 @@ export default function PropertyListingForm() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="internet_included"
-                        name="internet_included"
                         checked={formData.internet_included}
                         onCheckedChange={(checked) => 
                           setFormData({ ...formData, internet_included: !!checked })
@@ -796,7 +873,6 @@ export default function PropertyListingForm() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="pets_allowed"
-                        name="pets_allowed"
                         checked={formData.pets_allowed}
                         onCheckedChange={(checked) => 
                           setFormData({ ...formData, pets_allowed: !!checked })
@@ -807,7 +883,6 @@ export default function PropertyListingForm() {
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="smoking_allowed"
-                        name="smoking_allowed"
                         checked={formData.smoking_allowed}
                         onCheckedChange={(checked) => 
                           setFormData({ ...formData, smoking_allowed: !!checked })
@@ -819,9 +894,7 @@ export default function PropertyListingForm() {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                    Amenities
-                  </Label>
+                  <Label className="mb-3 block">Amenities</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {amenityOptions.map((amenity) => (
                       <div
@@ -862,10 +935,8 @@ export default function PropertyListingForm() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                    Property Photos (Max 10)
-                  </Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 transition-colors">
+                  <Label className="mb-3 block">Property Photos (Optional, Max 10)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                     <div className="text-center">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <div className="text-sm text-gray-600 mb-4">
@@ -882,29 +953,24 @@ export default function PropertyListingForm() {
                           accept="image/jpeg,image/jpg,image/png,image/webp"
                           onChange={handleImageUpload}
                           className="hidden"
-                          disabled={isUploading}
+                          disabled={isUploading || imageFiles.length >= 10}
                         />
                       </div>
                       <p className="text-xs text-gray-500">
-                        JPG, PNG, WebP up to 5MB each • Max {10 - imageFiles.length} more images
+                        JPG, PNG, WebP up to 5MB each • {10 - imageFiles.length} more allowed
                       </p>
                       {imageFiles.length > 0 && (
-                        <div className="mt-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
-                            {imageFiles.length} image{imageFiles.length !== 1 ? 's' : ''} selected
-                          </Badge>
-                        </div>
+                        <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800">
+                          {imageFiles.length} image{imageFiles.length !== 1 ? 's' : ''} ready to upload
+                        </Badge>
                       )}
                     </div>
                   </div>
 
-                  {/* Selected Images Preview */}
                   {imageFiles.length > 0 && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-700 mb-3 block">
-                        Selected Images ({imageFiles.length})
-                      </Label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                    <div className="mt-4">
+                      <Label className="mb-3 block">Selected Images ({imageFiles.length})</Label>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                         {imageFiles.map((file, index) => (
                           <div key={index} className="relative group">
                             <img
@@ -912,52 +978,36 @@ export default function PropertyListingForm() {
                               alt={`Upload ${index + 1}`}
                               className="w-full h-24 object-cover rounded-lg border"
                             />
-                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg flex items-center justify-center">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                disabled={isUploading}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
-                            <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
-                              {file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}
-                            </div>
-                            <div className="absolute top-1 left-1">
-                              <Badge variant="secondary" className="text-xs bg-white bg-opacity-90">
-                                {index + 1}
-                              </Badge>
-                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 h-6 w-6 p-0 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100"
+                              disabled={isUploading}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                            <Badge variant="secondary" className="absolute top-1 left-1 text-xs">
+                              {index + 1}
+                            </Badge>
                           </div>
                         ))}
-                      </div>
-                      
-                      {/* Image upload tips */}
-                      <div className="bg-blue-50 p-3 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <strong>📸 Photo tips:</strong> Upload high-quality images showing different angles, rooms, and features. 
-                          The first image will be your main listing photo.
-                        </p>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Property Review Summary */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-3">Review Your Listing</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Property:</span>
-                      <span className="font-medium">{formData.title || 'Not set'}</span>
+                      <span className="font-medium">{formData.title}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Address:</span>
-                      <span className="font-medium">{formData.address || 'Not set'}, {formData.suburb || 'Not set'}</span>
+                      <span className="font-medium">{formData.address}, {formData.suburb}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Type:</span>
@@ -969,30 +1019,30 @@ export default function PropertyListingForm() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Weekly Rent:</span>
-                      <span className="font-medium text-[#504746]">${formData.price_per_week || 0}</span>
+                      <span className="font-medium text-[#504746]">${formData.price_per_week}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Available From:</span>
                       <span className="font-medium">
-                        {formData.available_from ? new Date(formData.available_from).toLocaleDateString('en-NZ') : 'Not set'}
+                        {new Date(formData.available_from).toLocaleDateString('en-NZ')}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Images:</span>
-                      <span className="font-medium">{imageFiles.length || 0} uploaded</span>
-                    </div>
-                    {formData.amenities.length > 0 && (
-                      <div className="pt-2">
-                        <span className="text-gray-600 text-sm">Amenities:</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {formData.amenities.map((amenity) => (
-                            <Badge key={amenity} variant="secondary" className="text-xs">
-                              {amenity}
-                            </Badge>
-                          ))}
-                        </div>
+                    {isAdmin && (
+                      <div className="flex justify-between pt-2 border-t">
+                        <span className="text-gray-600">Compliance:</span>
+                        <Badge className={
+                          formData.compliance_status === 'compliant' ? 'bg-green-100 text-green-800' :
+                          formData.compliance_status === 'non_compliant' ? 'bg-red-100 text-red-800' :
+                          'bg-yellow-100 text-yellow-800'
+                        }>
+                          {formData.compliance_status}
+                        </Badge>
                       </div>
                     )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Images:</span>
+                      <span className="font-medium">{imageFiles.length || 'Using placeholder'}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -1003,12 +1053,12 @@ export default function PropertyListingForm() {
                   <Button 
                     type="submit" 
                     disabled={loading || isUploading}
-                    className="bg-[#504746] hover:bg-[#06b6d4] disabled:opacity-50"
+                    className="bg-[#504746] hover:bg-[#06b6d4]"
                   >
-                    {loading ? (
+                    {loading || isUploading ? (
                       <div className="flex items-center">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        {isUploading ? 'Uploading Images...' : 'Creating Listing...'}
+                        {isUploading ? 'Uploading...' : 'Creating...'}
                       </div>
                     ) : (
                       <div className="flex items-center">

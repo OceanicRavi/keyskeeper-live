@@ -21,7 +21,9 @@ import {
   Calendar,
   CheckCircle,
   XCircle,
-  Filter
+  Filter,
+  Plus,
+  Shield
 } from 'lucide-react'
 import { supabase, Property, User } from '@/lib/supabase'
 import { formatPrice } from '@/lib/stripe'
@@ -36,6 +38,9 @@ export default function AdminPropertiesPage() {
   const [error, setError] = useState('')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [propertyToDelete, setPropertyToDelete] = useState<string | null>(null)
+  const [complianceDialogOpen, setComplianceDialogOpen] = useState(false)
+  const [propertyToUpdate, setPropertyToUpdate] = useState<Property | null>(null)
+  const [selectedCompliance, setSelectedCompliance] = useState<Property['compliance_status']>('pending')
 
   useEffect(() => {
     checkAdminAccess()
@@ -126,6 +131,46 @@ export default function AdminPropertiesPage() {
     }
   }
 
+  const openComplianceDialog = (property: Property) => {
+    setPropertyToUpdate(property)
+    setSelectedCompliance(property.compliance_status)
+    setComplianceDialogOpen(true)
+  }
+
+  const handleUpdateCompliance = async () => {
+    if (!propertyToUpdate) return
+    
+    try {
+      const { error } = await supabase
+        .from('properties')
+        .update({ compliance_status: selectedCompliance })
+        .eq('id', propertyToUpdate.id)
+      
+      if (error) throw error
+      
+      await fetchProperties()
+      setComplianceDialogOpen(false)
+      setPropertyToUpdate(null)
+    } catch (error: any) {
+      setError(error.message || 'Failed to update compliance status')
+    }
+  }
+
+  const getComplianceColor = (status: string) => {
+    switch (status) {
+      case 'compliant':
+        return 'text-green-700 border-green-200 bg-green-50'
+      case 'pending':
+        return 'text-yellow-700 border-yellow-200 bg-yellow-50'
+      case 'non_compliant':
+        return 'text-red-700 border-red-200 bg-red-50'
+      case 'expired':
+        return 'text-orange-700 border-orange-200 bg-orange-50'
+      default:
+        return 'text-gray-700 border-gray-200 bg-gray-50'
+    }
+  }
+
   const filteredProperties = properties.filter(property => {
     const matchesSearch = 
       property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -165,6 +210,12 @@ export default function AdminPropertiesPage() {
               <h1 className="text-3xl font-bold text-gray-900">Property Management</h1>
               <p className="text-gray-600">Manage all properties in the system</p>
             </div>
+            <Link href="/list-property">
+              <Button className="bg-[#504746] hover:bg-[#06b6d4]">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Property
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -286,12 +337,15 @@ export default function AdminPropertiesPage() {
                               </>
                             )}
                           </Badge>
-                          <Badge variant="outline" className={
-                            property.compliance_status === 'compliant' ? 'text-green-700 border-green-200' :
-                            property.compliance_status === 'pending' ? 'text-yellow-700 border-yellow-200' :
-                            'text-red-700 border-red-200'
-                          }>
-                            {property.compliance_status}
+                          <Badge 
+                            variant="outline" 
+                            className={getComplianceColor(property.compliance_status)}
+                            onClick={() => openComplianceDialog(property)}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            {property.compliance_status === 'non_compliant' ? 'Non-Compliant' : 
+                             property.compliance_status === 'expired' ? 'Expired' :
+                             property.compliance_status.charAt(0).toUpperCase() + property.compliance_status.slice(1)}
                           </Badge>
                         </div>
                       </td>
@@ -310,6 +364,14 @@ export default function AdminPropertiesPage() {
                               <Edit className="h-4 w-4 text-green-600" />
                             </Button>
                           </Link>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openComplianceDialog(property)}
+                            title="Update compliance status"
+                          >
+                            <Shield className="h-4 w-4 text-purple-600" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -414,6 +476,46 @@ export default function AdminPropertiesPage() {
           </Card>
         </div>
 
+        {/* Compliance Update Dialog */}
+        <Dialog open={complianceDialogOpen} onOpenChange={setComplianceDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Update Compliance Status</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-gray-600 mb-4">
+                Update the compliance status for <strong>{propertyToUpdate?.title}</strong>
+              </p>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Compliance Status
+                </label>
+                <select
+                  value={selectedCompliance}
+                  onChange={(e) => setSelectedCompliance(e.target.value as Property['compliance_status'])}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                >
+                  <option value="compliant">Compliant</option>
+                  <option value="pending">Pending</option>
+                  <option value="non_compliant">Non-Compliant</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setComplianceDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleUpdateCompliance}
+                className="bg-[#504746] hover:bg-[#06b6d4]"
+              >
+                Update Status
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Delete Confirmation Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>
@@ -443,5 +545,4 @@ export default function AdminPropertiesPage() {
       <BottomNavigation />
     </div>
   )
-
 }
