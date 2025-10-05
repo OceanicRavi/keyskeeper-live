@@ -441,7 +441,18 @@ export function BottomNavigation() {
   const pathname = usePathname()
   const [user, setUser] = useState<UserProfile | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-
+  // components/ui/navigation.tsx - Add these to footer
+  const importantLinks = [
+    { href: '/search', text: 'Search Properties', priority: 'high' },
+    { href: '/landlord', text: 'For Landlords', priority: 'high' },
+    { href: '/tenant', text: 'For Tenants', priority: 'high' },
+    { href: '/property-appraisal', text: 'Property Appraisal' },
+    { href: '/maintenance-request', text: 'Maintenance Request' },
+    // Location pages
+    { href: '/search?location=Auckland', text: 'Properties in Auckland' },
+    { href: '/search?location=Wellington', text: 'Properties in Wellington' },
+    { href: '/search?location=Christchurch', text: 'Properties in Christchurch' },
+  ]
   useEffect(() => {
     const getInitialAuth = async () => {
       try {
@@ -532,8 +543,8 @@ export function BottomNavigation() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center space-y-1 transition-colors ${item.active
-                  ? 'text-[#504746] bg-red-50'
-                  : 'text-gray-600 hover:text-[#504746] hover:bg-gray-50'
+                ? 'text-[#504746] bg-red-50'
+                : 'text-gray-600 hover:text-[#504746] hover:bg-gray-50'
                 }`}
             >
               <Icon className="h-5 w-5" />

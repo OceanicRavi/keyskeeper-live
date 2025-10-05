@@ -1,0 +1,25 @@
+# Keyskeeper.co.nz Robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /onboarding/
+Disallow: /dashboard
+
+# Sitemap
+Sitemap: https://www.keyskeeper.co.nz/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Crawl-delay: 0.5
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Crawl-delay: 1
