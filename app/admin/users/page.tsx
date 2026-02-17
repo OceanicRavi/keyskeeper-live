@@ -28,7 +28,9 @@ import {
 } from 'lucide-react'
 import { supabase, User, UserRole } from '@/lib/supabase'
 import Link from 'next/link'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 export default function AdminUsersPage() {
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])

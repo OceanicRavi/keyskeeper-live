@@ -31,7 +31,9 @@ import {
 import { supabase, User, Property, MaintenanceRequest, Payment } from '@/lib/supabase'
 import Link from 'next/link'
 import { LogOut } from 'lucide-react'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)

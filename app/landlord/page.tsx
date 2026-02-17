@@ -15,7 +15,10 @@ import {
   Home
 } from 'lucide-react'
 import Link from 'next/link'
-
+export const metadata = {
+  title: 'Property Management for Landlords | Keyskeeper NZ',
+  alternates: { canonical: 'https://www.keyskeeper.co.nz/landlord' }
+}
 const features = [
   {
     icon: Bot,

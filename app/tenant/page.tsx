@@ -15,7 +15,10 @@ import {
   Search
 } from 'lucide-react'
 import Link from 'next/link'
-
+export const metadata = {
+  title: 'Find Rentals in New Zealand | Keyskeeper',
+  alternates: { canonical: 'https://www.keyskeeper.co.nz/tenant' }
+}
 const features = [
   {
     icon: Calendar,

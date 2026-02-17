@@ -28,7 +28,9 @@ import {
 import { supabase, Property, User } from '@/lib/supabase'
 import { formatPrice } from '@/lib/stripe'
 import Link from 'next/link'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 export default function AdminPropertiesPage() {
   const router = useRouter()
   const [properties, setProperties] = useState<(Property & { landlord?: User })[]>([])

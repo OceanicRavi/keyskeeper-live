@@ -21,7 +21,9 @@ import {
   Search
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 interface TenantOnboardingData {
   currentLocation: string
   preferredLocations: string[]

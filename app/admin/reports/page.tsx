@@ -19,7 +19,9 @@ import {
 import { supabase } from '@/lib/supabase'
 import { formatPrice } from '@/lib/stripe'
 import Link from 'next/link'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 interface ReportData {
   totalProperties: number
   totalUsers: number

@@ -28,7 +28,9 @@ import {
   AlertCircle
 } from 'lucide-react'
 import Link from 'next/link'
-
+export const metadata = {
+  robots: { index: false, follow: false }
+}
 interface PropertyFormData {
   title: string
   description: string
