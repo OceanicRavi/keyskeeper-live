@@ -23,9 +23,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-export const metadata = {
-  robots: { index: false, follow: false }
-}
+
 interface OnboardingData {
   businessName: string
   businessType: string

@@ -11,9 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, ArrowLeft, Mail, AlertTriangle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-export const metadata = {
-  robots: { index: false, follow: false }
-}
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')

@@ -11,9 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Eye, EyeOff, ArrowLeft, Home, Users, Wrench, Shield, Mail, CheckCircle } from 'lucide-react'
 import { supabase, UserRole } from '@/lib/supabase'
-export const metadata = {
-  robots: { index: false, follow: false }
-}
+
 const roleConfig = {
   landlord: {
     title: 'Landlord Account',
