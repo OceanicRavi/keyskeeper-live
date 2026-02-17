@@ -219,20 +219,20 @@ export function HeroSection() {
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#504746] mb-2">1,200+</div>
-                <div className="text-sm text-gray-600">Properties Listed</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">21</div>
+                <div className="text-sm text-gray-600">Residential properties</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#504746] mb-2">15+</div>
-                <div className="text-sm text-gray-600">Cities Covered</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">6</div>
+                <div className="text-sm text-gray-600">Commercial properties</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#504746] mb-2">98%</div>
+                <div className="text-3xl font-bold text-[#504746] mb-2">100%</div>
                 <div className="text-sm text-gray-600">Satisfaction Rate</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-[#504746] mb-2">24/7</div>
-                <div className="text-sm text-gray-600">AI Support</div>
+                <div className="text-sm text-gray-600">Support</div>
               </div>
             </div>
           </div>
