@@ -9,12 +9,6 @@ const features = [
     color: 'bg-green-100 text-green-600',
   },
   {
-    icon: Zap,
-    title: 'Instant Responses',
-    description: 'AI assistant handles tenant inquiries 24/7, providing instant responses to common questions.',
-    color: 'bg-blue-100 text-blue-600',
-  },
-  {
     icon: Users,
     title: 'Per-Room Management',
     description: 'Manage individual rooms or entire properties with separate contracts and payments.',

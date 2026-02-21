@@ -15,22 +15,6 @@ const testimonials = [
     avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'
   },
   {
-    name: 'James Wilson',
-    role: 'Tenant',
-    location: 'Wellington',
-    rating: 5,
-    text: 'Found my perfect room in Wellington within days. The booking process was seamless, and paying rent online is so convenient. The maintenance requests are handled quickly too.',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg'
-  },
-  {
-    name: 'Emma Rodriguez',
-    role: 'Property Manager',
-    location: 'Christchurch',
-    rating: 5,
-    text: 'Managing 20+ properties became effortless with Keyskeeper. The AI assistant handles most tenant inquiries automatically, saving me hours each week.',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg'
-  },
-  {
     name: 'Mike Thompson',
     role: 'Student',
     location: 'Hamilton',

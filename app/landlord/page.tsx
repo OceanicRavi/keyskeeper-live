@@ -18,12 +18,6 @@ import Link from 'next/link'
 
 const features = [
   {
-    icon: Bot,
-    title: 'AI-Assisted Leasing',
-    description: 'Automated responses to tenant inquiries with 95% accuracy. Handle 10x more leads without lifting a finger.',
-    benefits: ['24/7 instant responses', 'Pre-qualify tenants', 'Schedule viewings automatically']
-  },
-  {
     icon: Users,
     title: 'Per-Room Contracts',
     description: 'Manage individual rooms or entire properties with separate contracts, payments, and tenant profiles.',

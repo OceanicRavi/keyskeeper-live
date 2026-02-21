@@ -72,7 +72,7 @@ export function HeroSection() {
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3 md:mt-4 justify-center">
-                {['Auckland Central', 'Wellington', 'Christchurch', 'Hamilton', 'Tauranga'].map((city) => (
+                {['Auckland Central', 'Hamilton', 'Tauranga'].map((city) => (
                   <button
                     key={city}
                     onClick={() => {
