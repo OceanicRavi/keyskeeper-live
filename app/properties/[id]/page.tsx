@@ -4,14 +4,14 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { 
-  ArrowLeft, 
-  Heart, 
-  Share, 
-  Star, 
-  MapPin, 
-  Bed, 
-  Bath, 
+import {
+  ArrowLeft,
+  Heart,
+  Share,
+  Star,
+  MapPin,
+  Bed,
+  Bath,
   Home,
   Wifi,
   Car,
@@ -25,7 +25,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Eye
+  Eye,
+  ExternalLink,
+  FileText
 } from 'lucide-react'
 import { TopNavigation, BottomNavigation } from '@/components/ui/navigation'
 import { Button } from '@/components/ui/button'
@@ -60,7 +62,7 @@ export default function PropertyDetailsPage() {
 
         if (error) throw error
         setProperty(data)
-        
+
         if (data) {
           await trackPropertyView(data.id)
         }
@@ -119,7 +121,7 @@ export default function PropertyDetailsPage() {
 
   const nextImage = () => {
     if (property?.images && property.images.length > 0) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === property.images.length - 1 ? 0 : prev + 1
       )
     }
@@ -127,7 +129,7 @@ export default function PropertyDetailsPage() {
 
   const prevImage = () => {
     if (property?.images && property.images.length > 0) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? property.images.length - 1 : prev - 1
       )
     }
@@ -195,7 +197,7 @@ export default function PropertyDetailsPage() {
   return (
     <div className="min-h-screen bg-white">
       <TopNavigation />
-      
+
       {/* Fixed Header */}
       <div className="fixed top-16 left-0 right-0 z-30 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
@@ -205,18 +207,18 @@ export default function PropertyDetailsPage() {
               <span className="hidden sm:inline">Back</span>
             </Button>
           </Link>
-          
+
           <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" onClick={handleShare}>
               <Share className="h-4 w-4" />
             </Button>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="sm"
               onClick={() => setIsFavorite(!isFavorite)}
             >
-              <Heart 
-                className={`h-4 w-4 ${isFavorite ? 'fill-[#504746] text-[#504746]' : ''}`} 
+              <Heart
+                className={`h-4 w-4 ${isFavorite ? 'fill-[#504746] text-[#504746]' : ''}`}
               />
             </Button>
           </div>
@@ -226,7 +228,7 @@ export default function PropertyDetailsPage() {
       {/* Main Content */}
       <div className="pt-32 pb-20">
         <div className="max-w-6xl mx-auto">
-          
+
           {/* Image Gallery Section */}
           {hasImages && (
             <div className="relative mb-6">
@@ -236,7 +238,7 @@ export default function PropertyDetailsPage() {
                   alt={property.title}
                   className="w-full h-full object-cover"
                 />
-                
+
                 {/* Navigation arrows */}
                 {images.length > 1 && (
                   <>
@@ -254,12 +256,12 @@ export default function PropertyDetailsPage() {
                     </button>
                   </>
                 )}
-                
+
                 {/* Image counter */}
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/60 px-4 py-2 rounded-full">
                   {currentImageIndex + 1} / {images.length}
                 </div>
-                
+
                 {/* View all button */}
                 <button
                   onClick={() => setShowImageGallery(true)}
@@ -269,7 +271,7 @@ export default function PropertyDetailsPage() {
                   View All
                 </button>
               </div>
-              
+
               {/* Thumbnail dots */}
               {images.length > 1 && (
                 <div className="flex justify-center mt-4 space-x-2">
@@ -277,9 +279,8 @@ export default function PropertyDetailsPage() {
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentImageIndex ? 'bg-[#504746]' : 'bg-gray-300'
-                      }`}
+                      className={`w-2 h-2 rounded-full transition-all ${index === currentImageIndex ? 'bg-[#504746]' : 'bg-gray-300'
+                        }`}
                     />
                   ))}
                 </div>
@@ -306,7 +307,7 @@ export default function PropertyDetailsPage() {
                   <span className="text-gray-500 ml-1 text-sm">(12 reviews)</span>
                 </div>
               </div>
-              
+
               {/* Property Features */}
               <div className="flex flex-wrap items-center gap-4 mb-4">
                 <div className="flex items-center">
@@ -342,7 +343,7 @@ export default function PropertyDetailsPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                 <Dialog open={showViewingDialog} onOpenChange={setShowViewingDialog}>
                   <DialogTrigger asChild>
                     <Button className="bg-[#504746] hover:bg-[#06b6d4] text-white">
@@ -371,6 +372,26 @@ export default function PropertyDetailsPage() {
                 >
                   Apply Now
                 </Button>
+              </div> */}
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                <Button
+                  onClick={() => window.open('https://bookme.tenant.co.nz/tps10151', '_blank')}
+                  className="bg-[#504746] hover:bg-[#06b6d4] text-white"
+                >
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Book Viewing
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => window.open('https://apply.tenant.co.nz/tps10151', '_blank')}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Apply Now
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </Button>
               </div>
             </div>
 
@@ -382,7 +403,7 @@ export default function PropertyDetailsPage() {
                 <TabsTrigger value="location">Location</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="overview" className="mt-6 space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">Description</h3>
@@ -454,7 +475,7 @@ export default function PropertyDetailsPage() {
                   </div>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="amenities" className="mt-6 space-y-6">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-4">Available Amenities</h3>
@@ -462,7 +483,7 @@ export default function PropertyDetailsPage() {
                     {amenities.map((amenity, index) => {
                       const Icon = amenity.icon
                       return (
-                        <div 
+                        <div
                           key={index}
                           className="flex items-center space-x-3 p-3 rounded-lg bg-green-50 border border-green-200"
                         >
@@ -489,7 +510,7 @@ export default function PropertyDetailsPage() {
                   </div>
                 )}
               </TabsContent>
-              
+
               <TabsContent value="location" className="mt-6">
                 <PropertyLocationMap property={{
                   id: property.id,
@@ -501,7 +522,7 @@ export default function PropertyDetailsPage() {
                   longitude: property.longitude
                 }} />
               </TabsContent>
-              
+
               <TabsContent value="reviews" className="mt-6 space-y-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-gray-900 mb-2">4.8</div>
@@ -512,7 +533,7 @@ export default function PropertyDetailsPage() {
                   </div>
                   <div className="text-gray-600">Based on 12 reviews</div>
                 </div>
-                
+
                 <div className="space-y-4">
                   {reviews.map((review, index) => (
                     <Card key={index}>
@@ -615,9 +636,8 @@ export default function PropertyDetailsPage() {
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative aspect-square rounded-lg overflow-hidden ${
-                      index === currentImageIndex ? 'ring-2 ring-[#504746]' : ''
-                    }`}
+                    className={`relative aspect-square rounded-lg overflow-hidden ${index === currentImageIndex ? 'ring-2 ring-[#504746]' : ''
+                      }`}
                   >
                     <img
                       src={image}
